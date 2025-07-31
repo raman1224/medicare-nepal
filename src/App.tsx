@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AnimatePresence } from "framer-motion"
 import { ToastContainer } from "react-toastify"
 import AOS from "aos"
-import { io } from "socket.io-client"
+import { io, Socket } from "socket.io-client" // ✅ Import Socket
 
 // Components
 import WelcomePrompt from "./components/WelcomePrompt"
@@ -37,27 +37,26 @@ import "aos/dist/aos.css"
 function AppContent() {
   const [showWelcome, setShowWelcome] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const [socket, setSocket] = useState(null)
+
+  // ✅ Type socket as Socket or null
+  const [socket, setSocket] = useState<Socket | null>(null)
+
   const { user } = useAuth()
 
   useEffect(() => {
-    // Initialize AOS
     AOS.init({
       duration: 1000,
       once: true,
       easing: "ease-out-cubic",
     })
 
-    // Check if user has seen welcome before
     const hasSeenWelcome = localStorage.getItem("hasSeenWelcome")
     if (hasSeenWelcome) {
       setShowWelcome(false)
     }
 
-    // Initialize particles
     initParticles()
 
-    // Initialize Socket.IO connection
     const socketConnection = io(import.meta.env.VITE_API_URL || "http://localhost:5000", {
       transports: ["websocket"],
       autoConnect: true,
@@ -74,11 +73,8 @@ function AppContent() {
       console.log("Disconnected from server")
     })
 
-    
-    setSocket(socketConnection)
+    setSocket(socketConnection) // ✅ Now valid
 
-
-    // Cleanup
     return () => {
       socketConnection.disconnect()
     }
@@ -105,7 +101,6 @@ function AppContent() {
       <Router>
         <SocketProvider socket={socket}>
           <Navbar />
-
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -119,7 +114,6 @@ function AppContent() {
               <Route path="/terms" element={<TermsOfService />} />
             </Routes>
           </AnimatePresence>
-
           <Footer />
         </SocketProvider>
       </Router>
