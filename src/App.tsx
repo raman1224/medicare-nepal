@@ -1,13 +1,12 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
 import { ToastContainer } from "react-toastify"
 import AOS from "aos"
-import { io, Socket } from "socket.io-client" // ✅ Import Socket
+import { io, Socket } from "socket.io-client"
 
-// Components
 import WelcomePrompt from "./components/WelcomePrompt"
 import Navbar from "./components/Navbar"
 import Home from "./pages/Home"
@@ -22,38 +21,30 @@ import TermsOfService from "./pages/TermsOfService"
 import Footer from "./components/Footer"
 import FireCursor from "./components/FireCursor"
 
-// Context
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { SocketProvider } from "./context/SocketContext"
 
-// Utils
 import { initParticles } from "./utils/particles"
 
-// Styles
 import "react-toastify/dist/ReactToastify.css"
 import "aos/dist/aos.css"
+import { DefaultEventsMap } from "@socket.io/component-emitter"
 
 function AppContent() {
   const [showWelcome, setShowWelcome] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
-  // ✅ Type socket as Socket or null
-  const [socket, setSocket] = useState<Socket | null>(null)
+  // ✅ Fix: Properly typed socket state
+  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null)
 
   const { user } = useAuth()
 
   useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      easing: "ease-out-cubic",
-    })
+    AOS.init({ duration: 1000, once: true, easing: "ease-out-cubic" })
 
     const hasSeenWelcome = localStorage.getItem("hasSeenWelcome")
-    if (hasSeenWelcome) {
-      setShowWelcome(false)
-    }
+    if (hasSeenWelcome) setShowWelcome(false)
 
     initParticles()
 
@@ -73,7 +64,7 @@ function AppContent() {
       console.log("Disconnected from server")
     })
 
-    setSocket(socketConnection) // ✅ Now valid
+    setSocket(socketConnection)
 
     return () => {
       socketConnection.disconnect()

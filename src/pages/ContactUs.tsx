@@ -1,16 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Send, Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react"
-import { useTranslation } from "react-i18next"
 import { toast } from "react-toastify"
 import { contactAPI } from "../services/api"
 
 const ContactUs = () => {
-  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,7 +18,9 @@ const ContactUs = () => {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -191,7 +190,6 @@ const ContactUs = () => {
             transition={{ delay: 0.4 }}
             className="space-y-8"
           >
-            {/* Contact Details */}
             <div className="glass p-6 rounded-xl shadow-3d">
               <h3 className="text-xl font-bold mb-4 text-blue-400">📍 Get in Touch</h3>
 
@@ -235,7 +233,6 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* FAQ Section */}
             <div className="glass p-6 rounded-xl shadow-3d">
               <h3 className="text-xl font-bold mb-4 text-purple-400">❓ Frequently Asked Questions</h3>
 
@@ -270,7 +267,6 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* Emergency Notice */}
             <div className="glass p-6 rounded-xl border border-red-400/20 shadow-3d">
               <h3 className="text-xl font-bold mb-4 text-red-400">🚨 Medical Emergency?</h3>
 
