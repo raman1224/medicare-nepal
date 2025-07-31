@@ -150,12 +150,12 @@ const Footer: React.FC = () => {
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Medicare Pro
+                DANGOL AI
               </a>
             </p>
           </div>
 
-          <p className="text-sm text-gray-400">© 2024 Medicare Nepal. {t("footer.allRightsReserved")}</p>
+          <p className="text-sm text-gray-400">© 2024 DANGOL AI. {t("footer.allRightsReserved")}</p>
         </div>
       </div>
     </footer>

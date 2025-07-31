@@ -15,7 +15,6 @@ import {
   Volume2,
   Thermometer,
 } from "lucide-react"
-import { useTranslation } from "react-i18next"
 import { toast } from "react-toastify"
 import { useAuth } from "../context/AuthContext"
 import { useSocket } from "../context/SocketContext"
@@ -97,7 +96,6 @@ interface AnalysisResult {
 }
 
 const SymptomAnalyzer = () => {
-  const { t } = useTranslation()
   const { user } = useAuth()
   const { socket } = useSocket()
   const [symptoms, setSymptoms] = useState("")
