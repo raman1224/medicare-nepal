@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AnimatePresence } from "framer-motion"
 import { ToastContainer } from "react-toastify"
 import AOS from "aos"
-import { io, Socket } from "socket.io-client"
+import { io } from "socket.io-client"
 
 // Components
 import WelcomePrompt from "./components/WelcomePrompt"
@@ -45,14 +45,14 @@ import "./i18n/config"
 function AppContent() {
   const [showWelcome, setShowWelcome] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [socket, setSocket] = useState(null)
   const [isAppReady, setIsAppReady] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // AOS animation init
+        // Initialize AOS
         AOS.init({
           duration: 1000,
           once: true,
@@ -60,19 +60,25 @@ function AppContent() {
           offset: 100,
         })
 
-        // Check welcome prompt
+        // Check if user has seen welcome before
         const hasSeenWelcome = localStorage.getItem("hasSeenWelcome")
         if (hasSeenWelcome) {
           setShowWelcome(false)
         }
 
-        // Particles background
+        // Initialize particles
         await initParticles()
 
-        // PWA service worker
-        await registerSW()
+        // Register Service Worker
+        if ("serviceWorker" in navigator) {
+          try {
+            await registerSW()
+          } catch (error) {
+            console.warn("Service Worker registration failed:", error)
+          }
+        }
 
-        // Socket.IO init
+        // Initialize Socket.IO connection
         const socketConnection = io(import.meta.env.VITE_API_URL || "http://localhost:5000", {
           transports: ["websocket"],
           autoConnect: true,
@@ -96,15 +102,20 @@ function AppContent() {
           console.log("Reconnected to server")
         })
 
-        setSocket(socketConnection)
+        socketConnection.on("connect_error", (error) => {
+          console.warn("Socket connection error:", error)
+        })
+
+        setSocket(socketConnection)   //--error line 
         setIsAppReady(true)
 
+        // Cleanup function
         return () => {
           socketConnection.disconnect()
         }
       } catch (error) {
         console.error("Failed to initialize app:", error)
-        setIsAppReady(true) // Allow app to load even if some features fail
+        setIsAppReady(true) // Still show app even if some features fail
       }
     }
 
@@ -120,7 +131,9 @@ function AppContent() {
     }, 1500)
   }
 
-  if (!isAppReady) return <LoadingScreen />
+  if (!isAppReady) {
+    return <LoadingScreen />
+  }
 
   if (showWelcome) {
     return <WelcomePrompt onComplete={handleWelcomeComplete} isLoading={isLoading} />

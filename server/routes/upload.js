@@ -1,7 +1,9 @@
 import express from "express"
 import multer from "multer"
 import { auth } from "../middleware/auth.js"
-import { uploadToCloudinary } from "../utils/cloudinary.js"
+// import { uploadToCloudinary } from "../utils/cloudinary.js"
+import { uploadImage as uploadToCloudinary } from "../utils/cloudinary.js"
+
 import { logger } from "../utils/logger.js"
 
 const router = express.Router()

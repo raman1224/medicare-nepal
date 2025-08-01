@@ -7,14 +7,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name is required"],
       trim: true,
-      maxlength: [50, "Name cannot be more than 50 characters"],
+      maxlength: [50, "Name cannot exceed 50 characters"],
     },
     email: {
       type: String,
       required: [true, "Email is required"],
       unique: true,
       lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"],
+      trim: true,
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email address"],
     },
     password: {
       type: String,
@@ -22,33 +23,71 @@ const userSchema = new mongoose.Schema(
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
-    phone: {
-      type: String,
-      match: [/^[0-9]{10}$/, "Please enter a valid phone number"],
-    },
-    address: {
-      province: String,
-      district: String,
-      municipality: String,
-      ward: String,
-      street: String,
-    },
-    role: {
-      type: String,
-      enum: ["patient", "doctor", "admin"],
-      default: "patient",
-    },
     avatar: {
       type: String,
       default: "",
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
+    phone: {
+      type: String,
+      trim: true,
+      match: [/^\+?[\d\s-()]+$/, "Please enter a valid phone number"],
     },
-    verificationToken: String,
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
+    dateOfBirth: {
+      type: Date,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+    },
+    address: {
+      street: String,
+      city: String,
+      state: String,
+      country: {
+        type: String,
+        default: "Nepal",
+      },
+      zipCode: String,
+    },
+    medicalHistory: [
+      {
+        condition: String,
+        diagnosedDate: Date,
+        status: {
+          type: String,
+          enum: ["active", "resolved", "chronic"],
+          default: "active",
+        },
+        notes: String,
+      },
+    ],
+    allergies: [
+      {
+        allergen: String,
+        severity: {
+          type: String,
+          enum: ["mild", "moderate", "severe"],
+          default: "mild",
+        },
+        reaction: String,
+      },
+    ],
+    medications: [
+      {
+        name: String,
+        dosage: String,
+        frequency: String,
+        startDate: Date,
+        endDate: Date,
+        prescribedBy: String,
+      },
+    ],
+    emergencyContact: {
+      name: String,
+      relationship: String,
+      phone: String,
+      email: String,
+    },
     preferences: {
       language: {
         type: String,
@@ -56,48 +95,57 @@ const userSchema = new mongoose.Schema(
         default: "en",
       },
       notifications: {
-        email: { type: Boolean, default: true },
-        sms: { type: Boolean, default: false },
-        push: { type: Boolean, default: true },
+        email: {
+          type: Boolean,
+          default: true,
+        },
+        sms: {
+          type: Boolean,
+          default: false,
+        },
+        push: {
+          type: Boolean,
+          default: true,
+        },
       },
       theme: {
         type: String,
-        enum: ["light", "dark"],
-        default: "dark",
+        enum: ["light", "dark", "auto"],
+        default: "auto",
       },
     },
-    healthProfile: {
-      dateOfBirth: Date,
-      gender: {
-        type: String,
-        enum: ["male", "female", "other"],
-      },
-      bloodGroup: {
-        type: String,
-        enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-      },
-      height: Number, // in cm
-      weight: Number, // in kg
-      allergies: [String],
-      chronicConditions: [String],
-      medications: [String],
-      emergencyContact: {
-        name: String,
-        phone: String,
-        relation: String,
-      },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
     },
-    activityLog: [
-      {
-        action: String,
-        timestamp: { type: Date, default: Date.now },
-        ipAddress: String,
-        userAgent: String,
-      },
-    ],
-    lastLogin: Date,
-    loginAttempts: { type: Number, default: 0 },
-    lockUntil: Date,
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+    role: {
+      type: String,
+      enum: ["user", "doctor", "admin"],
+      default: "user",
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended"],
+      default: "active",
+    },
+    lastLogin: {
+      type: Date,
+    },
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    emailVerificationToken: String,
+    emailVerificationExpire: Date,
   },
   {
     timestamps: true,
@@ -106,31 +154,30 @@ const userSchema = new mongoose.Schema(
   },
 )
 
+// Create indexes
+userSchema.index({ email: 1 }, { unique: true })
+userSchema.index({ phone: 1 })
+userSchema.index({ createdAt: -1 })
+userSchema.index({ status: 1 })
+
 // Virtual for user's age
 userSchema.virtual("age").get(function () {
-  if (this.healthProfile.dateOfBirth) {
-    return Math.floor((Date.now() - this.healthProfile.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  if (this.dateOfBirth) {
+    return Math.floor((Date.now() - this.dateOfBirth.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
   }
   return null
 })
 
-// Virtual for BMI
-userSchema.virtual("bmi").get(function () {
-  if (this.healthProfile.height && this.healthProfile.weight) {
-    const heightInM = this.healthProfile.height / 100
-    return (this.healthProfile.weight / (heightInM * heightInM)).toFixed(1)
-  }
-  return null
+// Virtual for account lock status
+userSchema.virtual("isLocked").get(function () {
+  return !!(this.lockUntil && this.lockUntil > Date.now())
 })
-
-// Index for better query performance
-userSchema.index({ email: 1 })
-userSchema.index({ createdAt: -1 })
-userSchema.index({ "healthProfile.bloodGroup": 1 })
 
 // Pre-save middleware to hash password
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next()
+  if (!this.isModified("password")) {
+    return next()
+  }
 
   try {
     const salt = await bcrypt.genSalt(12)
@@ -141,14 +188,13 @@ userSchema.pre("save", async function (next) {
   }
 })
 
-// Method to check password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
-
-// Method to check if account is locked
-userSchema.methods.isLocked = function () {
-  return !!(this.lockUntil && this.lockUntil > Date.now())
+// Method to compare password
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password)
+  } catch (error) {
+    throw new Error("Password comparison failed")
+  }
 }
 
 // Method to increment login attempts
@@ -164,7 +210,7 @@ userSchema.methods.incLoginAttempts = function () {
   const updates = { $inc: { loginAttempts: 1 } }
 
   // Lock account after 5 failed attempts for 2 hours
-  if (this.loginAttempts + 1 >= 5 && !this.isLocked()) {
+  if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
     updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 } // 2 hours
   }
 
@@ -178,21 +224,28 @@ userSchema.methods.resetLoginAttempts = function () {
   })
 }
 
-// Method to log user activity
-userSchema.methods.logActivity = function (action, ipAddress, userAgent) {
-  this.activityLog.push({
-    action,
-    ipAddress,
-    userAgent,
-    timestamp: new Date(),
-  })
+// Method to generate password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  const crypto = require("crypto")
+  const resetToken = crypto.randomBytes(20).toString("hex")
 
-  // Keep only last 50 activities
-  if (this.activityLog.length > 50) {
-    this.activityLog = this.activityLog.slice(-50)
-  }
+  this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000 // 10 minutes
 
-  return this.save()
+  return resetToken
 }
 
-export default mongoose.model("User", userSchema)
+// Method to generate email verification token
+userSchema.methods.getEmailVerificationToken = function () {
+  const crypto = require("crypto")
+  const verificationToken = crypto.randomBytes(20).toString("hex")
+
+  this.emailVerificationToken = crypto.createHash("sha256").update(verificationToken).digest("hex")
+  this.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+
+  return verificationToken
+}
+
+const User = mongoose.model("User", userSchema)
+
+export default User

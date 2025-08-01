@@ -1,37 +1,86 @@
-import cloudinary from 'cloudinary';
-import { v2 as cloudinaryV2 } from 'cloudinary'; // Use V2 API for better functionality
+import { v2 as cloudinary } from "cloudinary"
+import { logger } from "./logger.js"
 
-// Initialize Cloudinary with your credentials from environment variables
-cloudinaryV2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // Your Cloudinary Cloud name
-  api_key: process.env.CLOUDINARY_API_KEY,      // Your Cloudinary API key
-  api_secret: process.env.CLOUDINARY_API_SECRET, // Your Cloudinary API secret
-});
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
-// Function to upload image to Cloudinary
-export const uploadToCloudinary = async (fileBuffer, options) => {
+// Upload image to Cloudinary
+export const uploadToCloudinary = async (file, folder = "medicare-nepal") => {
   try {
-    // Return a promise that resolves when upload is successful
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinaryV2.uploader.upload_stream(
-        {
-          resource_type: 'image', // Specify image upload
-          ...options, // Add additional options like folder, public_id, etc.
-        },
-        (error, result) => {
-          if (error) {
-            return reject(new Error(`Failed to upload image: ${error.message}`));
-          }
-          resolve(result); // On success, resolve the result
-        }
-      );
-      // Pipe the fileBuffer into Cloudinary's upload stream
-      fileBuffer.pipe(uploadStream);
-    });
-    
-    // Return the upload result, which contains image URL and other metadata
-    return result;
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: folder,
+      resource_type: "auto",
+      quality: "auto",
+      fetch_format: "auto",
+    })
+
+    logger.info(`Image uploaded to Cloudinary: ${result.public_id}`)
+
+    return {
+      public_id: result.public_id,
+      url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      resource_type: result.resource_type,
+    }
   } catch (error) {
-    throw new Error(`Cloudinary upload failed: ${error.message}`);
+    logger.error(`Cloudinary upload error: ${error.message}`)
+    throw new Error(`Failed to upload image: ${error.message}`)
   }
-};
+}
+
+// Delete image from Cloudinary
+export const deleteFromCloudinary = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId)
+    logger.info(`Image deleted from Cloudinary: ${publicId}`)
+    return result
+  } catch (error) {
+    logger.error(`Cloudinary delete error: ${error.message}`)
+    throw new Error(`Failed to delete image: ${error.message}`)
+  }
+}
+
+// Upload image from buffer
+export const uploadBufferToCloudinary = async (buffer, folder = "medicare-nepal") => {
+  try {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: folder,
+            resource_type: "auto",
+            quality: "auto",
+            fetch_format: "auto",
+          },
+          (error, result) => {
+            if (error) {
+              logger.error(`Cloudinary buffer upload error: ${error.message}`)
+              reject(new Error(`Failed to upload image: ${error.message}`))
+            } else {
+              logger.info(`Image uploaded to Cloudinary: ${result.public_id}`)
+              resolve({
+                public_id: result.public_id,
+                url: result.secure_url,
+                width: result.width,
+                height: result.height,
+                format: result.format,
+                resource_type: result.resource_type,
+              })
+            }
+          },
+        )
+        .end(buffer)
+    })
+  } catch (error) {
+    logger.error(`Cloudinary buffer upload error: ${error.message}`)
+    throw new Error(`Failed to upload image: ${error.message}`)
+  }
+}
+
+export default cloudinary

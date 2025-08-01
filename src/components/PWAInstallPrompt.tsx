@@ -2,126 +2,118 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Download, X } from 'lucide-react'
-import { useTranslation } from "react-i18next"
-
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[]
-  readonly userChoice: Promise<{
-    outcome: "accepted" | "dismissed"
-    platform: string
-  }>
-  prompt(): Promise<void>
-}
+import { Download, X, Smartphone } from "lucide-react"
 
 const PWAInstallPrompt = () => {
-  const { t } = useTranslation()
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
-  const [isInstalled, setIsInstalled] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+    // Check if it's iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    setIsIOS(iOS)
+
+    // Listen for the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      
-      // Show prompt after 30 seconds if not dismissed
-      setTimeout(() => {
-        const dismissed = localStorage.getItem("pwa-install-dismissed")
-        if (!dismissed && !isInstalled) {
-          setShowPrompt(true)
-        }
-      }, 30000)
+
+      // Check if user has dismissed the prompt before
+      const dismissed = localStorage.getItem("pwa-install-dismissed")
+      if (!dismissed) {
+        setShowPrompt(true)
+      }
     }
 
-    const handleAppInstalled = () => {
-      setIsInstalled(true)
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+
+    // Check if app is already installed
+    if (window.matchMedia("(display-mode: standalone)").matches) {
       setShowPrompt(false)
-      localStorage.setItem("pwa-installed", "true")
     }
-
-    // Check if already installed
-    const installed = localStorage.getItem("pwa-installed")
-    if (installed) {
-      setIsInstalled(true)
-    }
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener)
-    window.addEventListener("appinstalled", handleAppInstalled)
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener)
-      window.removeEventListener("appinstalled", handleAppInstalled)
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
     }
-  }, [isInstalled])
+  }, [])
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return
-
-    try {
-      await deferredPrompt.prompt()
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
-      
+
       if (outcome === "accepted") {
-        setIsInstalled(true)
-        localStorage.setItem("pwa-installed", "true")
+        console.log("User accepted the install prompt")
+      } else {
+        console.log("User dismissed the install prompt")
       }
-      
+
       setDeferredPrompt(null)
       setShowPrompt(false)
-    } catch (error) {
-      console.error("Error installing PWA:", error)
     }
   }
 
   const handleDismiss = () => {
     setShowPrompt(false)
     localStorage.setItem("pwa-install-dismissed", "true")
+
+    // Show again after 7 days
+    setTimeout(
+      () => {
+        localStorage.removeItem("pwa-install-dismissed")
+      },
+      7 * 24 * 60 * 60 * 1000,
+    )
   }
 
-  if (isInstalled || !deferredPrompt) return null
+  if (!showPrompt && !isIOS) return null
 
   return (
     <AnimatePresence>
-      {showPrompt && (
+      {(showPrompt || isIOS) && (
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="install-prompt fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-96 z-50"
+          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50"
         >
-          <div className="glass p-4 rounded-xl border border-white/20 shadow-3d">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Download className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Medicare Nepal</h3>
-                  <p className="text-sm text-gray-300">{t("pwa.installPrompt")}</p>
+          <div className="glass rounded-lg p-4 border border-blue-500/20">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Smartphone className="w-5 h-5 text-blue-400" />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-semibold text-sm mb-1">Install Medicare Nepal</h3>
+                <p className="text-gray-400 text-xs mb-3">
+                  {isIOS
+                    ? "Add to your home screen for quick access. Tap the share button and select 'Add to Home Screen'."
+                    : "Install our app for a better experience with offline access and notifications."}
+                </p>
+
+                <div className="flex gap-2">
+                  {!isIOS && (
+                    <button
+                      onClick={handleInstall}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-md transition-colors"
+                    >
+                      <Download className="w-3 h-3" />
+                      Install
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleDismiss}
+                    className="text-gray-400 hover:text-white text-xs px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    Later
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={handleDismiss}
-                className="text-gray-400 hover:text-white transition-colors p-1"
-                aria-label="Dismiss"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex space-x-2">
-              <button
-                onClick={handleInstall}
-                className="flex-1 glow-button btn-3d-primary text-sm py-2 px-4"
-              >
-                {t("pwa.install")}
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                {t("pwa.dismiss")}
+
+              <button onClick={handleDismiss} className="text-gray-400 hover:text-white p-1 -mt-1 -mr-1">
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>

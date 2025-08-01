@@ -2,131 +2,77 @@ import mongoose from "mongoose"
 
 const analyticsSchema = new mongoose.Schema(
   {
-    date: {
-      type: Date,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false, // Allow anonymous analytics
+    },
+    sessionId: {
+      type: String,
       required: true,
-      unique: true,
     },
-    users: {
-      total: { type: Number, default: 0 },
-      new: { type: Number, default: 0 },
-      active: { type: Number, default: 0 },
-      returning: { type: Number, default: 0 },
+    event: {
+      type: String,
+      required: true,
+      enum: [
+        "page_view",
+        "symptom_analysis",
+        "medicine_analysis",
+        "hospital_search",
+        "user_registration",
+        "user_login",
+        "contact_form",
+        "download_report",
+        "share_result",
+        "voice_command",
+        "image_upload",
+        "search_query",
+        "feature_usage",
+        "error_occurred",
+        "performance_metric",
+      ],
     },
-    symptomAnalyses: {
-      total: { type: Number, default: 0 },
-      completed: { type: Number, default: 0 },
-      failed: { type: Number, default: 0 },
-      byRiskLevel: {
-        low: { type: Number, default: 0 },
-        medium: { type: Number, default: 0 },
-        high: { type: Number, default: 0 },
-        critical: { type: Number, default: 0 },
+    page: {
+      type: String,
+      required: function () {
+        return this.event === "page_view"
       },
-      avgConfidence: { type: Number, default: 0 },
-      avgProcessingTime: { type: Number, default: 0 },
     },
-    medicineAnalyses: {
-      total: { type: Number, default: 0 },
-      completed: { type: Number, default: 0 },
-      failed: { type: Number, default: 0 },
-      avgConfidence: { type: Number, default: 0 },
-      avgProcessingTime: { type: Number, default: 0 },
+    data: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
-    hospitalSearches: {
-      total: { type: Number, default: 0 },
-      byProvince: [
-        {
-          province: String,
-          count: Number,
-        },
-      ],
-      byDepartment: [
-        {
-          department: String,
-          count: Number,
-        },
-      ],
+    userAgent: {
+      type: String,
     },
-    contacts: {
-      total: { type: Number, default: 0 },
-      resolved: { type: Number, default: 0 },
-      pending: { type: Number, default: 0 },
-      byCategory: [
-        {
-          category: String,
-          count: Number,
-        },
-      ],
+    ipAddress: {
+      type: String,
     },
-    performance: {
-      avgResponseTime: { type: Number, default: 0 },
-      uptime: { type: Number, default: 100 },
-      errorRate: { type: Number, default: 0 },
-      apiCalls: { type: Number, default: 0 },
+    country: {
+      type: String,
     },
-    geography: {
-      byCountry: [
-        {
-          country: String,
-          count: Number,
-        },
-      ],
-      byRegion: [
-        {
-          region: String,
-          count: Number,
-        },
-      ],
-      byCity: [
-        {
-          city: String,
-          count: Number,
-        },
-      ],
+    city: {
+      type: String,
     },
-    devices: {
-      desktop: { type: Number, default: 0 },
-      mobile: { type: Number, default: 0 },
-      tablet: { type: Number, default: 0 },
-    },
-    browsers: [
-      {
-        name: String,
-        count: Number,
-        percentage: Number,
+    device: {
+      type: {
+        type: String,
+        enum: ["desktop", "mobile", "tablet", "unknown"],
+        default: "unknown",
       },
-    ],
-    languages: [
-      {
-        code: String,
-        name: String,
-        count: Number,
-        percentage: Number,
-      },
-    ],
-    healthTrends: {
-      commonSymptoms: [
-        {
-          symptom: String,
-          count: Number,
-          trend: String, // 'increasing', 'decreasing', 'stable'
-        },
-      ],
-      commonMedicines: [
-        {
-          medicine: String,
-          count: Number,
-          trend: String,
-        },
-      ],
-      seasonalPatterns: [
-        {
-          condition: String,
-          season: String,
-          prevalence: Number,
-        },
-      ],
+      os: String,
+      browser: String,
+      version: String,
+    },
+    referrer: {
+      type: String,
+    },
+    duration: {
+      type: Number, // in milliseconds
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
@@ -134,68 +80,14 @@ const analyticsSchema = new mongoose.Schema(
   },
 )
 
-// Indexes
-analyticsSchema.index({ date: -1 })
-analyticsSchema.index({ "users.total": -1 })
-analyticsSchema.index({ "symptomAnalyses.total": -1 })
+// Create indexes for better query performance
+analyticsSchema.index({ sessionId: 1 })
+analyticsSchema.index({ userId: 1 })
+analyticsSchema.index({ event: 1 })
+analyticsSchema.index({ timestamp: -1 })
+analyticsSchema.index({ "device.type": 1 })
+analyticsSchema.index({ country: 1 })
 
-// Static method to get date range analytics
-analyticsSchema.statics.getDateRangeAnalytics = function (startDate, endDate) {
-  return this.find({
-    date: {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
-    },
-  }).sort({ date: 1 })
-}
+const Analytics = mongoose.model("Analytics", analyticsSchema)
 
-// Static method to get summary statistics
-analyticsSchema.statics.getSummary = function (days = 30) {
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - days)
-
-  return this.aggregate([
-    {
-      $match: {
-        date: { $gte: startDate },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalUsers: { $sum: "$users.total" },
-        totalSymptomAnalyses: { $sum: "$symptomAnalyses.total" },
-        totalMedicineAnalyses: { $sum: "$medicineAnalyses.total" },
-        totalHospitalSearches: { $sum: "$hospitalSearches.total" },
-        totalContacts: { $sum: "$contacts.total" },
-        avgConfidence: { $avg: "$symptomAnalyses.avgConfidence" },
-        avgUptime: { $avg: "$performance.uptime" },
-      },
-    },
-  ])
-}
-
-// Method to update daily analytics
-analyticsSchema.statics.updateDailyAnalytics = async function (date = new Date()) {
-  const startOfDay = new Date(date)
-  startOfDay.setHours(0, 0, 0, 0)
-
-  const endOfDay = new Date(date)
-  endOfDay.setHours(23, 59, 59, 999)
-
-  // This would typically aggregate data from other collections
-  // Implementation would depend on your specific analytics requirements
-
-  return this.findOneAndUpdate(
-    { date: startOfDay },
-    {
-      $set: {
-        // Analytics data would be calculated here
-        lastUpdated: new Date(),
-      },
-    },
-    { upsert: true, new: true },
-  )
-}
-
-export default mongoose.model("Analytics", analyticsSchema)
+export default Analytics
