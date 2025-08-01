@@ -8,39 +8,59 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-export const uploadToCloudinary = async (buffer, options = {}) => {
+export const uploadImage = async (file, folder = "medicare-nepal") => {
   try {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "auto",
-          ...options,
-        },
-        (error, result) => {
-          if (error) {
-            logger.error(`Cloudinary upload error: ${error.message}`)
-            reject(new Error("Failed to upload image"))
-          } else {
-            logger.info(`Image uploaded to Cloudinary: ${result.public_id}`)
-            resolve(result.secure_url)
-          }
-        },
-      )
-      uploadStream.end(buffer)
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder,
+      resource_type: "auto",
+      quality: "auto",
+      fetch_format: "auto",
+      transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }],
     })
+
+    return {
+      public_id: result.public_id,
+      url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      bytes: result.bytes,
+    }
   } catch (error) {
     logger.error(`Cloudinary upload error: ${error.message}`)
-    throw new Error("Failed to upload to Cloudinary")
+    throw new Error("Failed to upload image")
   }
 }
 
-export const deleteFromCloudinary = async (publicId) => {
+export const deleteImage = async (publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId)
-    logger.info(`Image deleted from Cloudinary: ${publicId}`)
     return result
   } catch (error) {
     logger.error(`Cloudinary delete error: ${error.message}`)
-    throw new Error("Failed to delete from Cloudinary")
+    throw new Error("Failed to delete image")
+  }
+}
+
+export const uploadMultipleImages = async (files, folder = "medicare-nepal") => {
+  try {
+    const uploadPromises = files.map((file) => uploadImage(file, folder))
+    const results = await Promise.all(uploadPromises)
+    return results
+  } catch (error) {
+    logger.error(`Cloudinary multiple upload error: ${error.message}`)
+    throw new Error("Failed to upload multiple images")
+  }
+}
+
+export const generateImageUrl = (publicId, transformations = {}) => {
+  try {
+    return cloudinary.url(publicId, {
+      ...transformations,
+      secure: true,
+    })
+  } catch (error) {
+    logger.error(`Cloudinary URL generation error: ${error.message}`)
+    return null
   }
 }

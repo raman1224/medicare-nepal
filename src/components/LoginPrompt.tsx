@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { X, LogIn, UserPlus } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 interface LoginPromptProps {
   isOpen: boolean
@@ -11,63 +12,95 @@ interface LoginPromptProps {
 }
 
 const LoginPrompt = ({ isOpen, onClose, message }: LoginPromptProps) => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  const handleLogin = () => {
+    onClose()
+    navigate("/auth")
+  }
+
+  const handleContinueWithoutLogin = () => {
+    onClose()
+    // Continue with limited functionality
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateX: -10 }}
-            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-            exit={{ opacity: 0, scale: 0.8, rotateX: -10 }}
-            className="glass p-8 rounded-2xl max-w-md w-full border border-white/10 shadow-3d modal-3d active"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0, rotateX: -10 }}
+            animate={{ scale: 1, opacity: 1, rotateX: 0 }}
+            exit={{ scale: 0.8, opacity: 0, rotateX: -10 }}
+            className="relative glass p-6 rounded-xl max-w-md w-full shadow-3d modal-3d active"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold neon-text">🔐 Login Required</h2>
-              <button onClick={onClose} className="p-2 rounded-lg glass hover:bg-white/10 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            <div className="space-y-4 mb-6">
-              <p className="text-gray-300">
-                {message || "Please login to access this feature and get personalized recommendations."}
-              </p>
-
-              <div className="p-4 bg-blue-400/10 border border-blue-400/20 rounded-lg">
-                <h3 className="font-semibold mb-2 text-blue-400">✨ Benefits of logging in:</h3>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>• 📊 Personalized health analysis</li>
-                  <li>• 📈 Track your health history</li>
-                  <li>• 🔔 Get follow-up reminders</li>
-                  <li>• 💾 Save your analysis results</li>
-                </ul>
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogIn className="w-8 h-8 text-white" />
               </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Login Required</h2>
+              <p className="text-gray-400">
+                {message || "Please login to access this feature and get personalized health recommendations."}
+              </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/auth"
-                onClick={onClose}
-                className="flex-1 flex items-center justify-center space-x-2 glow-button py-3 btn-3d-primary"
+            <div className="space-y-3">
+              <button
+                onClick={handleLogin}
+                className="w-full glow-button btn-3d-primary flex items-center justify-center space-x-2 py-3"
               >
-                <LogIn className="w-4 h-4" />
-                <span>🚀 Login</span>
-              </Link>
-
-              <Link
-                to="/auth"
-                onClick={onClose}
-                className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-600 rounded-lg text-gray-300 hover:border-gray-400 hover:text-white transition-all duration-300 btn-3d-success"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>📝 Sign Up</span>
-              </Link>
-            </div>
-
-            <div className="mt-4 text-center">
-              <button onClick={onClose} className="text-sm text-gray-400 hover:text-gray-300 transition-colors">
-                ❌ Continue without login
+                <LogIn className="w-5 h-5" />
+                <span>{t("auth.login")}</span>
               </button>
+
+              <button
+                onClick={handleLogin}
+                className="w-full glass border border-white/20 hover:border-white/40 transition-colors rounded-lg py-3 flex items-center justify-center space-x-2"
+              >
+                <UserPlus className="w-5 h-5" />
+                <span>{t("auth.signup")}</span>
+              </button>
+
+              <button
+                onClick={handleContinueWithoutLogin}
+                className="w-full text-gray-400 hover:text-white transition-colors py-2 text-sm"
+              >
+                Continue without login (limited features)
+              </button>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Secure</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Fast</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span>Private</span>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

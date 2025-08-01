@@ -7,11 +7,11 @@ interface SocketContextType {
   socket: Socket | null
 }
 
-const SocketContext = createContext<SocketContextType | undefined>(undefined)
+const SocketContext = createContext<SocketContextType>({ socket: null })
 
 export const useSocket = () => {
   const context = useContext(SocketContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useSocket must be used within a SocketProvider")
   }
   return context

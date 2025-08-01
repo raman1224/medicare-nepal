@@ -2,48 +2,70 @@
 
 import { useEffect, useState } from "react"
 
+interface FireTrail {
+  id: number
+  x: number
+  y: number
+  timestamp: number
+}
+
 const FireCursor = () => {
-  const [trails, setTrails] = useState<Array<{ id: number; x: number; y: number }>>([])
+  const [trails, setTrails] = useState<FireTrail[]>([])
+  const [isEnabled, setIsEnabled] = useState(true)
 
   useEffect(() => {
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (prefersReducedMotion) {
+      setIsEnabled(false)
+      return
+    }
+
     let trailId = 0
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newTrail = {
+      if (!isEnabled) return
+
+      const newTrail: FireTrail = {
         id: trailId++,
         x: e.clientX,
         y: e.clientY,
+        timestamp: Date.now(),
       }
 
-      setTrails((prev) => [...prev, newTrail])
-
-      // Remove trail after animation
-      setTimeout(() => {
-        setTrails((prev) => prev.filter((trail) => trail.id !== newTrail.id))
-      }, 500)
+      setTrails((prev) => [...prev.slice(-10), newTrail])
     }
+
+    // Clean up old trails
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      setTrails((prev) => prev.filter((trail) => now - trail.timestamp < 500))
+    }, 100)
 
     document.addEventListener("mousemove", handleMouseMove)
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove)
+      clearInterval(cleanupInterval)
     }
-  }, [])
+  }, [isEnabled])
+
+  if (!isEnabled) return null
 
   return (
-    <>
-      {trails.map((trail) => (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      {trails.map((trail, index) => (
         <div
           key={trail.id}
-          className="fire-trail"
+          className="fire-trail absolute"
           style={{
             left: trail.x - 4,
             top: trail.y - 4,
-            zIndex: 9999,
+            animationDelay: `${index * 50}ms`,
           }}
         />
       ))}
-    </>
+    </div>
   )
 }
 

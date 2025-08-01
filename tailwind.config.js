@@ -1,14 +1,36 @@
 /** @type {import('tailwindcss').Config} */
+const defaultConfig = require("tailwindcss/defaultConfig")
+
 module.exports = {
+  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
   ],
   theme: {
+    ...defaultConfig.theme,
     extend: {
+      screens: {
+        xs: "320px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
+        watch: "280px",
+        mobile: "480px",
+        tablet: "768px",
+        laptop: "1024px",
+        desktop: "1280px",
+      },
       colors: {
+        ...defaultConfig.theme.extend.colors,
         primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
           50: "#f0f9ff",
           100: "#e0f2fe",
           200: "#bae6fd",
@@ -19,6 +41,30 @@ module.exports = {
           700: "#0369a1",
           800: "#075985",
           900: "#0c4a6e",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
         neon: {
           blue: "#00f5ff",
@@ -33,8 +79,18 @@ module.exports = {
           dark: "rgba(0, 0, 0, 0.1)",
         },
       },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      spacing: {
+        18: "4.5rem",
+        88: "22rem",
+        128: "32rem",
       },
       animation: {
         glow: "glow 2s ease-in-out infinite alternate",
@@ -48,6 +104,10 @@ module.exports = {
         "slide-down": "slide-down 0.3s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "fade-out": "fade-out 0.3s ease-in",
+        "bounce-in": "bounce-in 0.6s ease-out",
+        "scale-in": "scale-in 0.3s ease-out",
+        "rotate-in": "rotate-in 0.5s ease-out",
+        spin: "spin 1s linear infinite",
       },
       keyframes: {
         glow: {
@@ -131,6 +191,46 @@ module.exports = {
           "0%": { opacity: "1" },
           "100%": { opacity: "0" },
         },
+        "bounce-in": {
+          "0%": {
+            transform: "scale(0.3)",
+            opacity: "0",
+          },
+          "50%": {
+            transform: "scale(1.05)",
+          },
+          "70%": {
+            transform: "scale(0.9)",
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+        },
+        "scale-in": {
+          "0%": {
+            transform: "scale(0)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+        },
+        "rotate-in": {
+          "0%": {
+            transform: "rotate(-180deg) scale(0)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "rotate(0deg) scale(1)",
+            opacity: "1",
+          },
+        },
+        spin: {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       backdropBlur: {
         xs: "2px",
@@ -151,30 +251,68 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
+    require("tailwindcss-animate"),
     ({ addUtilities }) => {
       const newUtilities = {
-        ".perspective-1000": { perspective: "1000px" },
-        ".perspective-1500": { perspective: "1500px" },
-        ".perspective-2000": { perspective: "2000px" },
-        ".transform-3d": { transformStyle: "preserve-3d" },
-        ".backface-hidden": { backfaceVisibility: "hidden" },
-        ".rotate-x-0": { transform: "rotateX(0deg)" },
-        ".rotate-x-2": { transform: "rotateX(2deg)" },
-        ".rotate-x-5": { transform: "rotateX(5deg)" },
-        ".rotate-x-10": { transform: "rotateX(10deg)" },
-        ".-rotate-x-2": { transform: "rotateX(-2deg)" },
-        ".-rotate-x-5": { transform: "rotateX(-5deg)" },
-        ".-rotate-x-10": { transform: "rotateX(-10deg)" },
-        ".rotate-y-0": { transform: "rotateY(0deg)" },
-        ".rotate-y-2": { transform: "rotateY(2deg)" },
-        ".rotate-y-5": { transform: "rotateY(5deg)" },
-        ".rotate-y-10": { transform: "rotateY(10deg)" },
-        ".-rotate-y-2": { transform: "rotateY(-2deg)" },
-        ".-rotate-y-5": { transform: "rotateY(-5deg)" },
-        ".-rotate-y-10": { transform: "rotateY(-10deg)" },
-      };
-      addUtilities(newUtilities);
+        ".perspective-1000": {
+          perspective: "1000px",
+        },
+        ".perspective-1500": {
+          perspective: "1500px",
+        },
+        ".perspective-2000": {
+          perspective: "2000px",
+        },
+        ".transform-3d": {
+          transformStyle: "preserve-3d",
+        },
+        ".backface-hidden": {
+          backfaceVisibility: "hidden",
+        },
+        ".rotate-x-0": {
+          transform: "rotateX(0deg)",
+        },
+        ".rotate-x-2": {
+          transform: "rotateX(2deg)",
+        },
+        ".rotate-x-5": {
+          transform: "rotateX(5deg)",
+        },
+        ".rotate-x-10": {
+          transform: "rotateX(10deg)",
+        },
+        ".-rotate-x-2": {
+          transform: "rotateX(-2deg)",
+        },
+        ".-rotate-x-5": {
+          transform: "rotateX(-5deg)",
+        },
+        ".-rotate-x-10": {
+          transform: "rotateX(-10deg)",
+        },
+        ".rotate-y-0": {
+          transform: "rotateY(0deg)",
+        },
+        ".rotate-y-2": {
+          transform: "rotateY(2deg)",
+        },
+        ".rotate-y-5": {
+          transform: "rotateY(5deg)",
+        },
+        ".rotate-y-10": {
+          transform: "rotateY(10deg)",
+        },
+        ".-rotate-y-2": {
+          transform: "rotateY(-2deg)",
+        },
+        ".-rotate-y-5": {
+          transform: "rotateY(-5deg)",
+        },
+        ".-rotate-y-10": {
+          transform: "rotateY(-10deg)",
+        },
+      }
+      addUtilities(newUtilities)
     },
   ],
-};
+}

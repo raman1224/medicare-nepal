@@ -1,212 +1,275 @@
 import cron from "node-cron"
+import { logger } from "../utils/logger.js"
 import Analytics from "../models/Analytics.js"
 import SymptomAnalysis from "../models/SymptomAnalysis.js"
 import MedicineAnalysis from "../models/MedicineAnalysis.js"
+import Hospital from "../models/Hospital.js"
 import User from "../models/User.js"
-import Contact from "../models/Contact.js"
-import { logger } from "../utils/logger.js"
 
-// Run daily at midnight to sync analytics data
-cron.schedule("0 0 * * *", async () => {
+// Run every hour to update analytics
+cron.schedule("0 * * * *", async () => {
   try {
-    logger.info("Starting daily health data sync...")
+    logger.info("Starting hourly analytics update...")
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    // Get symptom analysis stats
+    const symptomStats = await SymptomAnalysis.aggregate([
+      {
+        $facet: {
+          hourly: [{ $match: { createdAt: { $gte: oneHourAgo } } }, { $count: "count" }],
+          daily: [{ $match: { createdAt: { $gte: oneDayAgo } } }, { $count: "count" }],
+          weekly: [{ $match: { createdAt: { $gte: oneWeekAgo } } }, { $count: "count" }],
+          monthly: [{ $match: { createdAt: { $gte: oneMonthAgo } } }, { $count: "count" }],
+          topSymptoms: [
+            { $match: { createdAt: { $gte: oneWeekAgo } } },
+            { $unwind: "$symptoms" },
+            { $group: { _id: "$symptoms", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 },
+          ],
+          severityDistribution: [
+            { $match: { createdAt: { $gte: oneWeekAgo } } },
+            { $group: { _id: "$result.riskLevel", count: { $sum: 1 } } },
+          ],
+        },
+      },
+    ])
 
-    // Get daily statistics
-    const [totalUsers, newUsers, activeUsers, symptomAnalyses, medicineAnalyses, hospitalSearches, contacts] =
-      await Promise.all([
-        User.countDocuments(),
-        User.countDocuments({
-          createdAt: { $gte: today, $lt: tomorrow },
-        }),
-        User.countDocuments({
-          lastLogin: { $gte: today, $lt: tomorrow },
-        }),
-        SymptomAnalysis.aggregate([
-          {
-            $match: {
-              createdAt: { $gte: today, $lt: tomorrow },
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              total: { $sum: 1 },
-              completed: {
-                $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
-              },
-              failed: {
-                $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] },
-              },
-              avgConfidence: { $avg: "$confidence" },
-              avgProcessingTime: { $avg: "$processingTime" },
-              byRiskLevel: {
-                $push: {
-                  riskLevel: "$analysis.riskLevel",
-                  count: 1,
-                },
-              },
-            },
-          },
-        ]),
-        MedicineAnalysis.aggregate([
-          {
-            $match: {
-              createdAt: { $gte: today, $lt: tomorrow },
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              total: { $sum: 1 },
-              completed: {
-                $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
-              },
-              failed: {
-                $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] },
-              },
-              avgConfidence: { $avg: "$confidence" },
-              avgProcessingTime: { $avg: "$processingTime" },
-            },
-          },
-        ]),
-        // Simulate hospital searches (would be actual data in production)
-        Promise.resolve([
-          {
-            total: Math.floor(Math.random() * 100) + 50,
-            byProvince: [
-              { province: "Bagmati", count: Math.floor(Math.random() * 30) + 20 },
-              { province: "Gandaki", count: Math.floor(Math.random() * 20) + 10 },
-              { province: "Koshi", count: Math.floor(Math.random() * 15) + 5 },
-            ],
-          },
-        ]),
-        Contact.aggregate([
-          {
-            $match: {
-              createdAt: { $gte: today, $lt: tomorrow },
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              total: { $sum: 1 },
-              resolved: {
-                $sum: { $cond: [{ $eq: ["$status", "resolved"] }, 1, 0] },
-              },
-              pending: {
-                $sum: { $cond: [{ $eq: ["$status", "new"] }, 1, 0] },
-              },
-              byCategory: {
-                $push: {
-                  category: "$category",
-                  count: 1,
-                },
-              },
-            },
-          },
-        ]),
-      ])
+    // Get medicine analysis stats
+    const medicineStats = await MedicineAnalysis.aggregate([
+      {
+        $facet: {
+          hourly: [{ $match: { createdAt: { $gte: oneHourAgo } } }, { $count: "count" }],
+          daily: [{ $match: { createdAt: { $gte: oneDayAgo } } }, { $count: "count" }],
+          weekly: [{ $match: { createdAt: { $gte: oneWeekAgo } } }, { $count: "count" }],
+          monthly: [{ $match: { createdAt: { $gte: oneMonthAgo } } }, { $count: "count" }],
+          topMedicines: [
+            { $match: { createdAt: { $gte: oneWeekAgo } } },
+            { $group: { _id: "$result.medicine.name", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 },
+          ],
+        },
+      },
+    ])
 
-    // Process risk level data
-    const riskLevelCounts = { low: 0, medium: 0, high: 0, critical: 0 }
-    if (symptomAnalyses[0]?.byRiskLevel) {
-      symptomAnalyses[0].byRiskLevel.forEach((item) => {
-        if (riskLevelCounts.hasOwnProperty(item.riskLevel)) {
-          riskLevelCounts[item.riskLevel]++
-        }
-      })
-    }
+    // Get user stats
+    const userStats = await User.aggregate([
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          newToday: [{ $match: { createdAt: { $gte: oneDayAgo } } }, { $count: "count" }],
+          newThisWeek: [{ $match: { createdAt: { $gte: oneWeekAgo } } }, { $count: "count" }],
+          activeToday: [{ $match: { lastLogin: { $gte: oneDayAgo } } }, { $count: "count" }],
+          byProvince: [
+            { $match: { "address.province": { $exists: true } } },
+            { $group: { _id: "$address.province", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+          ],
+        },
+      },
+    ])
 
-    // Create or update analytics record
+    // Update analytics document
     await Analytics.findOneAndUpdate(
-      { date: today },
+      {},
       {
         $set: {
+          lastUpdated: now,
+          symptoms: {
+            hourly: symptomStats[0].hourly[0]?.count || 0,
+            daily: symptomStats[0].daily[0]?.count || 0,
+            weekly: symptomStats[0].weekly[0]?.count || 0,
+            monthly: symptomStats[0].monthly[0]?.count || 0,
+            topSymptoms: symptomStats[0].topSymptoms,
+            severityDistribution: symptomStats[0].severityDistribution,
+          },
+          medicines: {
+            hourly: medicineStats[0].hourly[0]?.count || 0,
+            daily: medicineStats[0].daily[0]?.count || 0,
+            weekly: medicineStats[0].weekly[0]?.count || 0,
+            monthly: medicineStats[0].monthly[0]?.count || 0,
+            topMedicines: medicineStats[0].topMedicines,
+          },
           users: {
-            total: totalUsers,
-            new: newUsers,
-            active: activeUsers,
-            returning: activeUsers - newUsers,
-          },
-          symptomAnalyses: {
-            total: symptomAnalyses[0]?.total || 0,
-            completed: symptomAnalyses[0]?.completed || 0,
-            failed: symptomAnalyses[0]?.failed || 0,
-            byRiskLevel: riskLevelCounts,
-            avgConfidence: symptomAnalyses[0]?.avgConfidence || 0,
-            avgProcessingTime: symptomAnalyses[0]?.avgProcessingTime || 0,
-          },
-          medicineAnalyses: {
-            total: medicineAnalyses[0]?.total || 0,
-            completed: medicineAnalyses[0]?.completed || 0,
-            failed: medicineAnalyses[0]?.failed || 0,
-            avgConfidence: medicineAnalyses[0]?.avgConfidence || 0,
-            avgProcessingTime: medicineAnalyses[0]?.avgProcessingTime || 0,
-          },
-          hospitalSearches: {
-            total: hospitalSearches[0]?.total || 0,
-            byProvince: hospitalSearches[0]?.byProvince || [],
-          },
-          contacts: {
-            total: contacts[0]?.total || 0,
-            resolved: contacts[0]?.resolved || 0,
-            pending: contacts[0]?.pending || 0,
-            byCategory: contacts[0]?.byCategory || [],
-          },
-          performance: {
-            avgResponseTime: Math.random() * 200 + 100, // Simulated
-            uptime: 99.9,
-            errorRate: Math.random() * 2,
-            apiCalls: (symptomAnalyses[0]?.total || 0) + (medicineAnalyses[0]?.total || 0),
+            total: userStats[0].total[0]?.count || 0,
+            newToday: userStats[0].newToday[0]?.count || 0,
+            newThisWeek: userStats[0].newThisWeek[0]?.count || 0,
+            activeToday: userStats[0].activeToday[0]?.count || 0,
+            byProvince: userStats[0].byProvince,
           },
         },
       },
-      { upsert: true, new: true },
+      { upsert: true },
     )
 
-    logger.info("Daily health data sync completed successfully")
+    logger.info("Hourly analytics update completed successfully")
   } catch (error) {
-    logger.error(`Health data sync error: ${error.message}`)
+    logger.error(`Hourly analytics update failed: ${error.message}`)
   }
 })
 
-// Run hourly to update real-time statistics
-cron.schedule("0 * * * *", async () => {
+// Run daily at midnight to generate health trends
+cron.schedule("0 0 * * *", async () => {
   try {
-    logger.info("Updating hourly statistics...")
+    logger.info("Starting daily health trends update...")
 
     const now = new Date()
-    const hourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    // Update real-time metrics
-    const hourlyStats = await Promise.all([
-      SymptomAnalysis.countDocuments({
-        createdAt: { $gte: hourAgo },
-        status: "completed",
-      }),
-      MedicineAnalysis.countDocuments({
-        createdAt: { $gte: hourAgo },
-        status: "completed",
-      }),
-      User.countDocuments({
-        lastLogin: { $gte: hourAgo },
-      }),
+    // Generate daily health trends for the past 30 days
+    const dailyTrends = await SymptomAnalysis.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: thirtyDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          totalAnalyses: { $sum: 1 },
+          avgConfidence: { $avg: "$result.confidence" },
+          riskLevels: {
+            $push: "$result.riskLevel",
+          },
+        },
+      },
+      {
+        $addFields: {
+          date: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: "$_id.month",
+              day: "$_id.day",
+            },
+          },
+          lowRisk: {
+            $size: {
+              $filter: {
+                input: "$riskLevels",
+                cond: { $eq: ["$$this", "low"] },
+              },
+            },
+          },
+          mediumRisk: {
+            $size: {
+              $filter: {
+                input: "$riskLevels",
+                cond: { $eq: ["$$this", "medium"] },
+              },
+            },
+          },
+          highRisk: {
+            $size: {
+              $filter: {
+                input: "$riskLevels",
+                cond: { $eq: ["$$this", "high"] },
+              },
+            },
+          },
+          criticalRisk: {
+            $size: {
+              $filter: {
+                input: "$riskLevels",
+                cond: { $eq: ["$$this", "critical"] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $sort: { date: 1 },
+      },
     ])
 
-    // Store in cache or emit via socket for real-time updates
-    // This would typically be stored in Redis or similar cache
-    logger.info(
-      `Hourly stats - Symptoms: ${hourlyStats[0]}, Medicines: ${hourlyStats[1]}, Active Users: ${hourlyStats[2]}`,
+    // Update analytics with health trends
+    await Analytics.findOneAndUpdate(
+      {},
+      {
+        $set: {
+          "healthTrends.daily": dailyTrends,
+          "healthTrends.lastUpdated": now,
+        },
+      },
+      { upsert: true },
     )
+
+    logger.info("Daily health trends update completed successfully")
   } catch (error) {
-    logger.error(`Hourly stats update error: ${error.message}`)
+    logger.error(`Daily health trends update failed: ${error.message}`)
   }
 })
 
-logger.info("Health data sync jobs initialized")
+// Run weekly to clean up old data
+cron.schedule("0 0 * * 0", async () => {
+  try {
+    logger.info("Starting weekly data cleanup...")
+
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+
+    // Clean up old symptom analyses (keep only last 6 months)
+    const deletedSymptoms = await SymptomAnalysis.deleteMany({
+      createdAt: { $lt: sixMonthsAgo },
+    })
+
+    // Clean up old medicine analyses (keep only last 6 months)
+    const deletedMedicines = await MedicineAnalysis.deleteMany({
+      createdAt: { $lt: sixMonthsAgo },
+    })
+
+    // Clean up old user activities (keep only last 3 months)
+    const threeMonthsAgo = new Date()
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+
+    await User.updateMany(
+      {},
+      {
+        $pull: {
+          activityLog: {
+            timestamp: { $lt: threeMonthsAgo },
+          },
+        },
+      },
+    )
+
+    logger.info(
+      `Weekly cleanup completed: ${deletedSymptoms.deletedCount} symptom analyses, ${deletedMedicines.deletedCount} medicine analyses deleted`,
+    )
+  } catch (error) {
+    logger.error(`Weekly data cleanup failed: ${error.message}`)
+  }
+})
+
+// Run monthly to update hospital data
+cron.schedule("0 0 1 * *", async () => {
+  try {
+    logger.info("Starting monthly hospital data update...")
+
+    // This would typically fetch updated hospital data from external sources
+    // For now, we'll just update the lastUpdated timestamp
+    await Hospital.updateMany(
+      {},
+      {
+        $set: {
+          lastUpdated: new Date(),
+        },
+      },
+    )
+
+    logger.info("Monthly hospital data update completed")
+  } catch (error) {
+    logger.error(`Monthly hospital data update failed: ${error.message}`)
+  }
+})
+
+logger.info("Health data sync cron jobs initialized")
