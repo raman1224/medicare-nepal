@@ -10,6 +10,9 @@ import { getMedicineInfo } from "../services/geminiService.js"
 import { uploadImage } from "../utils/cloudinary.js" // Correct import
 import { logger } from "../utils/logger.js"
 
+import { uploadImage } from "../utils/cloudinary.js";
+
+
 const router = express.Router()
 
 // Configure multer for file uploads
