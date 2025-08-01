@@ -7,7 +7,7 @@ import MedicineAnalysis from "../models/MedicineAnalysis.js"
 import { auth } from "../middleware/auth.js"
 import { analyzeMedicineImage } from "../services/visionService.js"
 import { getMedicineInfo } from "../services/geminiService.js"
-import { uploadToCloudinary } from "../utils/cloudinary.js"
+import { uploadImage } from "../utils/cloudinary.js" // Correct import
 import { logger } from "../utils/logger.js"
 
 const router = express.Router()
@@ -61,7 +61,7 @@ router.post("/analyze-image", auth, analysisLimiter, upload.single("image"), asy
     const sessionId = uuidv4()
 
     // Upload image to Cloudinary
-    const imageUrl = await uploadToCloudinary(req.file.buffer, {
+    const imageUrl = await uploadImage(req.file, {
       folder: "medicine-analysis",
       public_id: `medicine_${sessionId}`,
       resource_type: "image",

@@ -89,6 +89,9 @@ export default defineConfig({
         secure: false,
       },
     },
+    hmr: {
+      overlay: false, // Disable the HMR overlay for error messages
+    },
   },
   build: {
     outDir: "dist",

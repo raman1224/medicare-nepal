@@ -1,66 +1,37 @@
-import { v2 as cloudinary } from "cloudinary"
-import { logger } from "./logger.js"
+import cloudinary from 'cloudinary';
+import { v2 as cloudinaryV2 } from 'cloudinary'; // Use V2 API for better functionality
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+// Initialize Cloudinary with your credentials from environment variables
+cloudinaryV2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // Your Cloudinary Cloud name
+  api_key: process.env.CLOUDINARY_API_KEY,      // Your Cloudinary API key
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Your Cloudinary API secret
+});
 
-export const uploadImage = async (file, folder = "medicare-nepal") => {
+// Function to upload image to Cloudinary
+export const uploadToCloudinary = async (fileBuffer, options) => {
   try {
-    const result = await cloudinary.uploader.upload(file.path, {
-      folder,
-      resource_type: "auto",
-      quality: "auto",
-      fetch_format: "auto",
-      transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }],
-    })
-
-    return {
-      public_id: result.public_id,
-      url: result.secure_url,
-      width: result.width,
-      height: result.height,
-      format: result.format,
-      bytes: result.bytes,
-    }
+    // Return a promise that resolves when upload is successful
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinaryV2.uploader.upload_stream(
+        {
+          resource_type: 'image', // Specify image upload
+          ...options, // Add additional options like folder, public_id, etc.
+        },
+        (error, result) => {
+          if (error) {
+            return reject(new Error(`Failed to upload image: ${error.message}`));
+          }
+          resolve(result); // On success, resolve the result
+        }
+      );
+      // Pipe the fileBuffer into Cloudinary's upload stream
+      fileBuffer.pipe(uploadStream);
+    });
+    
+    // Return the upload result, which contains image URL and other metadata
+    return result;
   } catch (error) {
-    logger.error(`Cloudinary upload error: ${error.message}`)
-    throw new Error("Failed to upload image")
+    throw new Error(`Cloudinary upload failed: ${error.message}`);
   }
-}
-
-export const deleteImage = async (publicId) => {
-  try {
-    const result = await cloudinary.uploader.destroy(publicId)
-    return result
-  } catch (error) {
-    logger.error(`Cloudinary delete error: ${error.message}`)
-    throw new Error("Failed to delete image")
-  }
-}
-
-export const uploadMultipleImages = async (files, folder = "medicare-nepal") => {
-  try {
-    const uploadPromises = files.map((file) => uploadImage(file, folder))
-    const results = await Promise.all(uploadPromises)
-    return results
-  } catch (error) {
-    logger.error(`Cloudinary multiple upload error: ${error.message}`)
-    throw new Error("Failed to upload multiple images")
-  }
-}
-
-export const generateImageUrl = (publicId, transformations = {}) => {
-  try {
-    return cloudinary.url(publicId, {
-      ...transformations,
-      secure: true,
-    })
-  } catch (error) {
-    logger.error(`Cloudinary URL generation error: ${error.message}`)
-    return null
-  }
-}
+};

@@ -27,7 +27,6 @@ module.exports = {
         desktop: "1280px",
       },
       colors: {
-        ...defaultConfig.theme.extend.colors,
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

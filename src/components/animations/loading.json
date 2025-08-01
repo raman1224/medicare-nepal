@@ -1,0 +1,10 @@
+{
+  "animation": {
+    "name": "loading",
+    "frames": 60
+  },
+  "settings": {
+    "speed": "fast",
+    "loop": true
+  }
+}
