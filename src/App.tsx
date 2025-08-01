@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AnimatePresence } from "framer-motion"
 import { ToastContainer } from "react-toastify"
 import AOS from "aos"
-import { io } from "socket.io-client"
+import { io, type Socket } from "socket.io-client"
 
 // Components
 import WelcomePrompt from "./components/WelcomePrompt"
@@ -45,11 +45,13 @@ import "./i18n/config"
 function AppContent() {
   const [showWelcome, setShowWelcome] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const [socket, setSocket] = useState(null)
+  const [socket, setSocket] = useState<Socket | null>(null)
   const [isAppReady, setIsAppReady] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
+    let cleanup: (() => void) | undefined
+
     const initializeApp = async () => {
       try {
         // Initialize AOS
@@ -67,7 +69,11 @@ function AppContent() {
         }
 
         // Initialize particles
-        await initParticles()
+        try {
+          await initParticles()
+        } catch (error) {
+          console.warn("Particles initialization failed:", error)
+        }
 
         // Register Service Worker
         if ("serviceWorker" in navigator) {
@@ -106,11 +112,11 @@ function AppContent() {
           console.warn("Socket connection error:", error)
         })
 
-        setSocket(socketConnection)   //--error line 
+        setSocket(socketConnection)
         setIsAppReady(true)
 
-        // Cleanup function
-        return () => {
+        // Setup cleanup function
+        cleanup = () => {
           socketConnection.disconnect()
         }
       } catch (error) {
@@ -120,6 +126,13 @@ function AppContent() {
     }
 
     initializeApp()
+
+    // Cleanup function
+    return () => {
+      if (cleanup) {
+        cleanup()
+      }
+    }
   }, [user])
 
   const handleWelcomeComplete = () => {
