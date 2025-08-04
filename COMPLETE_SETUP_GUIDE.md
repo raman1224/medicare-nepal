@@ -225,40 +225,7 @@ export default defineConfig({
 ```
 
 #### tailwind.config.js
-```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      animation: {
-        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
-        'voice-pulse': 'voice-pulse 1s ease-in-out infinite',
-      },
-      keyframes: {
-        'pulse-subtle': {
-          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-          '50%': { transform: 'scale(1.05)', opacity: '0.9' },
-        },
-        'voice-pulse': {
-          '0%, 100%': { 
-            borderColor: 'rgba(34, 197, 94, 0.5)',
-            boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.7)'
-          },
-          '50%': { 
-            borderColor: 'rgba(34, 197, 94, 0.8)',
-            boxShadow: '0 0 0 8px rgba(34, 197, 94, 0)'
-          },
-        }
-      }
-    },
-  },
-  plugins: [],
-}
-```
+Copy the complete Tailwind config from `COMPLETE_TAILWIND_CONFIG.js` and save it as `tailwind.config.js`
 
 #### src/main.tsx
 ```tsx
@@ -280,98 +247,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 ```
 
-#### src/index.css
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Enhanced Symptom Analyzer Styles */
-.voice-active {
-  animation: voice-pulse 1s ease-in-out infinite;
-}
-
-@keyframes voice-pulse {
-  0%, 100% {
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  }
-  50% {
-    border-color: rgba(34, 197, 94, 0.8);
-    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-  }
-}
-
-/* Range Slider Styles */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-input[type="range"]::-webkit-slider-track {
-  background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
-  height: 8px;
-  border-radius: 4px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #3b82f6;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-  transition: all 0.3s ease;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
-}
-
-/* Firefox */
-input[type="range"]::-moz-range-track {
-  background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
-  height: 8px;
-  border-radius: 4px;
-  border: none;
-}
-
-input[type="range"]::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #3b82f6;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-}
-
-/* Glass Morphism Effects */
-.glass {
-  background: rgba(17, 24, 39, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Loading Animation */
-.loading-dots::after {
-  content: '';
-  animation: loading-dots 1.5s linear infinite;
-}
-
-@keyframes loading-dots {
-  0% { content: ''; }
-  25% { content: '.'; }
-  50% { content: '..'; }
-  75% { content: '...'; }
-  100% { content: ''; }
-}
-```
+#### src/index.css  
+Copy the complete CSS from `COMPLETE_INDEX_CSS.css` and save it as `src/index.css`
 
 #### index.html
 ```html
