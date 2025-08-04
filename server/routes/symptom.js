@@ -13,7 +13,7 @@ const router = express.Router()
 // Rate limiting for symptom analysis
 const analysisLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // limit each user to 10 analyses per hour
+  max: 15, // increased limit for better user experience
   message: {
     error: "Too many symptom analyses. Please try again later.",
     retryAfter: 60 * 60, // 1 hour in seconds
@@ -22,7 +22,7 @@ const analysisLimiter = rateLimit({
   legacyHeaders: false,
 })
 
-// Validation rules
+// Enhanced validation rules
 const symptomAnalysisValidation = [
   body("symptoms")
     .isArray({ min: 1 })
@@ -37,11 +37,23 @@ const symptomAnalysisValidation = [
     .withMessage("Temperature must be between 30°C and 50°C"),
   body("temperature.unit").optional().isIn(["C", "F"]).withMessage("Temperature unit must be C or F"),
   body("emotions").optional().isArray().withMessage("Emotions must be an array"),
+  body("painLevel").optional().isInt({ min: 0, max: 10 }).withMessage("Pain level must be between 0 and 10"),
+  body("symptomDuration").optional().isString().withMessage("Symptom duration must be a string"),
   body("language").optional().isIn(["en", "ne", "hi"]).withMessage("Language must be en, ne, or hi"),
 ]
 
+// Helper function to emit real-time progress updates
+const emitProgress = (io, userId, sessionId, progress, step) => {
+  io.to(`user_${userId}`).emit("symptom_analysis_progress", {
+    sessionId,
+    progress,
+    step,
+    timestamp: new Date().toISOString()
+  })
+}
+
 // @route   POST /api/symptoms/analyze
-// @desc    Analyze symptoms using AI
+// @desc    Analyze symptoms using AI with real-time updates
 // @access  Private
 router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async (req, res) => {
   const startTime = Date.now()
@@ -63,11 +75,17 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
       additionalInfo = "",
       images = [],
       voiceInput,
+      painLevel = 0,
+      symptomDuration = "",
       language = "en",
     } = req.body
 
     // Generate unique session ID
     const sessionId = uuidv4()
+    const io = req.app.get("io")
+
+    // Send initial progress update
+    emitProgress(io, req.user.id, sessionId, 10, "Initializing analysis...")
 
     // Create analysis record
     const analysis = new SymptomAnalysis({
@@ -76,8 +94,8 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
       input: {
         symptoms: symptoms.map((symptom) => ({
           name: symptom,
-          severity: 5, // Default severity
-          duration: "unknown",
+          severity: Math.min(Math.max(painLevel / 2, 1), 5), // Convert pain level to severity
+          duration: symptomDuration || "unknown",
           description: symptom,
         })),
         temperature,
@@ -85,25 +103,32 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
         additionalInfo,
         images,
         voiceInput,
+        painLevel,
+        symptomDuration,
       },
       language,
       metadata: {
         ipAddress: req.ip,
         userAgent: req.get("User-Agent"),
+        timestamp: new Date(),
       },
     })
 
     await analysis.save()
+    emitProgress(io, req.user.id, sessionId, 25, "Processing symptoms...")
 
     try {
       // Process voice input if provided
       let processedSymptoms = symptoms
       if (voiceInput && voiceInput.transcript) {
+        emitProgress(io, req.user.id, sessionId, 35, "Processing voice input...")
         const voiceSymptoms = await processVoiceInput(voiceInput.transcript, language)
         processedSymptoms = [...symptoms, ...voiceSymptoms]
       }
 
-      // Analyze symptoms using Gemini AI
+      emitProgress(io, req.user.id, sessionId, 50, "Analyzing with AI...")
+
+      // Analyze symptoms using Gemini AI with enhanced parameters
       const aiAnalysis = await analyzeSymptoms({
         symptoms: processedSymptoms,
         temperature,
@@ -112,7 +137,11 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
         language,
         userAge: req.user.age,
         userGender: req.user.healthProfile?.gender,
+        painLevel,
+        symptomDuration,
       })
+
+      emitProgress(io, req.user.id, sessionId, 80, "Generating recommendations...")
 
       // Update analysis with results
       analysis.analysis = aiAnalysis
@@ -121,15 +150,19 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
       analysis.status = "completed"
 
       await analysis.save()
+      emitProgress(io, req.user.id, sessionId, 95, "Finalizing results...")
 
-      // Emit real-time update via Socket.IO
-      const io = req.app.get("io")
+      // Emit real-time completion update via Socket.IO
       io.to(`user_${req.user.id}`).emit("symptom_analysis_complete", {
         sessionId,
         analysis: aiAnalysis,
+        processingTime: analysis.processingTime,
+        timestamp: new Date().toISOString()
       })
 
-      logger.info(`Symptom analysis completed for user ${req.user.id}, session ${sessionId}`)
+      emitProgress(io, req.user.id, sessionId, 100, "Analysis complete!")
+
+      logger.info(`Symptom analysis completed for user ${req.user.id}, session ${sessionId}, processing time: ${analysis.processingTime}ms`)
 
       res.json({
         success: true,
@@ -139,20 +172,30 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
           analysis: aiAnalysis,
           confidence: analysis.confidence,
           processingTime: analysis.processingTime,
+          timestamp: new Date().toISOString(),
         },
       })
     } catch (aiError) {
       // Update analysis status to failed
       analysis.status = "failed"
       analysis.processingTime = Date.now() - startTime
+      analysis.errorMessage = aiError.message
       await analysis.save()
 
-      logger.error(`AI analysis error: ${aiError.message}`)
+      // Emit failure notification
+      io.to(`user_${req.user.id}`).emit("symptom_analysis_failed", {
+        sessionId,
+        error: "Analysis failed. Please try again.",
+        timestamp: new Date().toISOString()
+      })
+
+      logger.error(`AI analysis error for session ${sessionId}: ${aiError.message}`)
 
       res.status(500).json({
         success: false,
         message: "Failed to analyze symptoms. Please try again.",
         sessionId,
+        error: process.env.NODE_ENV === 'development' ? aiError.message : undefined,
       })
     }
   } catch (error) {
@@ -160,20 +203,32 @@ router.post("/analyze", auth, analysisLimiter, symptomAnalysisValidation, async 
     res.status(500).json({
       success: false,
       message: "Server error during symptom analysis",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     })
   }
 })
 
 // @route   GET /api/symptoms/history
-// @desc    Get user's symptom analysis history
+// @desc    Get user's symptom analysis history with enhanced filtering
 // @access  Private
 router.get("/history", auth, async (req, res) => {
   try {
-    const { page = 1, limit = 10, status } = req.query
+    const { page = 1, limit = 10, status, dateFrom, dateTo, riskLevel } = req.query
 
     const query = { user: req.user.id }
+    
     if (status) {
       query.status = status
+    }
+    
+    if (riskLevel) {
+      query["analysis.riskLevel"] = riskLevel
+    }
+    
+    if (dateFrom || dateTo) {
+      query.createdAt = {}
+      if (dateFrom) query.createdAt.$gte = new Date(dateFrom)
+      if (dateTo) query.createdAt.$lte = new Date(dateTo)
     }
 
     const analyses = await SymptomAnalysis.find(query)
@@ -181,18 +236,42 @@ router.get("/history", auth, async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .select("-metadata -input.voiceInput")
+      .populate("user", "name email")
 
     const total = await SymptomAnalysis.countDocuments(query)
+
+    // Calculate statistics
+    const stats = await SymptomAnalysis.aggregate([
+      { $match: { user: req.user.id, status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          avgConfidence: { $avg: "$confidence" },
+          avgProcessingTime: { $avg: "$processingTime" },
+          totalAnalyses: { $sum: 1 },
+          riskLevels: {
+            $push: "$analysis.riskLevel"
+          }
+        }
+      }
+    ])
 
     res.json({
       success: true,
       data: {
         analyses,
         pagination: {
-          current: page,
+          current: parseInt(page),
           pages: Math.ceil(total / limit),
           total,
+          limit: parseInt(limit)
         },
+        statistics: stats[0] || {
+          avgConfidence: 0,
+          avgProcessingTime: 0,
+          totalAnalyses: 0,
+          riskLevels: []
+        }
       },
     })
   } catch (error) {
@@ -205,7 +284,7 @@ router.get("/history", auth, async (req, res) => {
 })
 
 // @route   GET /api/symptoms/analysis/:sessionId
-// @desc    Get specific symptom analysis
+// @desc    Get specific symptom analysis with detailed information
 // @access  Private
 router.get("/analysis/:sessionId", auth, async (req, res) => {
   try {
@@ -214,7 +293,7 @@ router.get("/analysis/:sessionId", auth, async (req, res) => {
     const analysis = await SymptomAnalysis.findOne({
       sessionId,
       user: req.user.id,
-    }).select("-metadata")
+    }).select("-metadata").populate("user", "name email age")
 
     if (!analysis) {
       return res.status(404).json({
@@ -223,9 +302,31 @@ router.get("/analysis/:sessionId", auth, async (req, res) => {
       })
     }
 
+    // Add related analyses for comparison
+    const relatedAnalyses = await SymptomAnalysis.find({
+      user: req.user.id,
+      _id: { $ne: analysis._id },
+      status: "completed"
+    })
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .select("sessionId createdAt analysis.possibleConditions analysis.confidence analysis.riskLevel")
+
     res.json({
       success: true,
-      data: { analysis },
+      data: { 
+        analysis,
+        relatedAnalyses,
+        insights: {
+          isRecurring: relatedAnalyses.some(ra => 
+            ra.analysis.possibleConditions.some(pc => 
+              analysis.analysis.possibleConditions.some(apc => apc.name === pc.name)
+            )
+          ),
+          improvementTrend: calculateImprovementTrend(analysis, relatedAnalyses),
+          riskTrend: calculateRiskTrend(analysis, relatedAnalyses)
+        }
+      },
     })
   } catch (error) {
     logger.error(`Get symptom analysis error: ${error.message}`)
@@ -235,6 +336,37 @@ router.get("/analysis/:sessionId", auth, async (req, res) => {
     })
   }
 })
+
+// Helper functions for trend analysis
+const calculateImprovementTrend = (currentAnalysis, previousAnalyses) => {
+  if (previousAnalyses.length === 0) return "no_data"
+  
+  const currentRisk = getRiskScore(currentAnalysis.analysis.riskLevel)
+  const avgPreviousRisk = previousAnalyses.reduce((sum, analysis) => 
+    sum + getRiskScore(analysis.analysis.riskLevel), 0) / previousAnalyses.length
+  
+  if (currentRisk < avgPreviousRisk) return "improving"
+  if (currentRisk > avgPreviousRisk) return "worsening"
+  return "stable"
+}
+
+const calculateRiskTrend = (currentAnalysis, previousAnalyses) => {
+  const riskHistory = [currentAnalysis, ...previousAnalyses]
+    .map(a => getRiskScore(a.analysis?.riskLevel || "medium"))
+    .slice(0, 5) // Last 5 analyses
+  
+  if (riskHistory.length < 2) return "insufficient_data"
+  
+  const trend = riskHistory[0] - riskHistory[riskHistory.length - 1]
+  if (trend > 0) return "increasing"
+  if (trend < 0) return "decreasing"
+  return "stable"
+}
+
+const getRiskScore = (riskLevel) => {
+  const scores = { low: 1, medium: 2, high: 3, critical: 4 }
+  return scores[riskLevel] || 2
+}
 
 // @route   POST /api/symptoms/feedback/:sessionId
 // @desc    Submit feedback for symptom analysis
