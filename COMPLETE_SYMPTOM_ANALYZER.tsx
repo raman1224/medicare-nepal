@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Send,
@@ -23,15 +23,11 @@ import {
   Shield,
   Zap,
   RefreshCw,
+  MicIcon,
+  MicOffIcon
 } from "lucide-react"
-import { toast } from "react-toastify"
-import { useAuth } from "../context/AuthContext"
-import { useSocket } from "../context/SocketContext"
-import { apiClient } from "../services/api"
-import VoiceRecognition from "../components/VoiceRecognition"
-import VoiceTutorial from "../components/VoiceTutorial"
-import LoginPrompt from "../components/LoginPrompt"
 
+// Types and Interfaces
 interface AnalysisResult {
   possibleConditions: Array<{
     name: string
@@ -116,9 +112,96 @@ interface AnalysisResult {
   sessionId?: string
 }
 
-const SymptomAnalyzer = () => {
-  const { user } = useAuth()
-  const { socket } = useSocket()
+// Voice Recognition Component
+const VoiceRecognition: React.FC<{
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  label: string
+  isTextArea?: boolean
+  language?: string
+}> = ({ value, onChange, placeholder, label, isTextArea = false, language = "en-US" }) => {
+  const [isListening, setIsListening] = useState(false)
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      const recognitionInstance = new SpeechRecognition()
+      recognitionInstance.continuous = true
+      recognitionInstance.interimResults = true
+      recognitionInstance.lang = language
+
+      recognitionInstance.onresult = (event) => {
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript
+        }
+        onChange(value + ' ' + transcript)
+      }
+
+      recognitionInstance.onend = () => {
+        setIsListening(false)
+      }
+
+      setRecognition(recognitionInstance)
+    }
+  }, [language, value, onChange])
+
+  const toggleListening = () => {
+    if (recognition) {
+      if (isListening) {
+        recognition.stop()
+        setIsListening(false)
+      } else {
+        recognition.start()
+        setIsListening(true)
+      }
+    }
+  }
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-2 text-gray-300 flex items-center space-x-2">
+        <span>{label}</span>
+      </label>
+      <div className="relative">
+        {isTextArea ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full p-4 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm ${isListening ? 'voice-active' : ''}`}
+            rows={4}
+          />
+        ) : (
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm ${isListening ? 'voice-active' : ''}`}
+          />
+        )}
+        <button
+          type="button"
+          onClick={toggleListening}
+          className={`absolute right-3 top-3 p-2 rounded-lg transition-colors ${
+            isListening 
+              ? 'bg-red-500 text-white' 
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+        >
+          {isListening ? <MicOffIcon className="w-4 h-4" /> : <MicIcon className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Main Symptom Analyzer Component
+const SymptomAnalyzer: React.FC = () => {
+  // State management
   const [symptoms, setSymptoms] = useState("")
   const [temperature, setTemperature] = useState("")
   const [temperatureUnit, setTemperatureUnit] = useState<"C" | "F">("C")
@@ -127,12 +210,10 @@ const SymptomAnalyzer = () => {
   const [symptomDuration, setSymptomDuration] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [showVoiceTutorial, setShowVoiceTutorial] = useState(false)
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
-  const [sessionId, setSessionId] = useState<string | null>(null)
   const [analysisProgress, setAnalysisProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState("")
   const [realtimeSymptoms, setRealtimeSymptoms] = useState<string[]>([])
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   // Real-time symptom detection
   const detectSymptoms = useCallback((text: string) => {
@@ -154,40 +235,10 @@ const SymptomAnalyzer = () => {
     detectSymptoms(symptoms)
   }, [symptoms, detectSymptoms])
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("symptom_analysis_progress", (data) => {
-        if (data.sessionId === sessionId) {
-          setAnalysisProgress(data.progress)
-          setCurrentStep(data.step)
-        }
-      })
-
-      socket.on("symptom_analysis_complete", (data) => {
-        if (data.sessionId === sessionId) {
-          setResult(data.analysis)
-          setIsAnalyzing(false)
-          setAnalysisProgress(100)
-          setCurrentStep("Analysis Complete")
-          toast.success("🎉 Analysis completed successfully!")
-        }
-      })
-
-      return () => {
-        socket.off("symptom_analysis_progress")
-        socket.off("symptom_analysis_complete")
-      }
-    }
-  }, [socket, sessionId])
-
-  const handleAnalyze = async () => {
+  // Mock API call for demonstration
+  const analyzeSymptoms = async () => {
     if (!symptoms.trim()) {
-      toast.error("Please describe your symptoms")
-      return
-    }
-
-    if (!user) {
-      setShowLoginPrompt(true)
+      alert("Please describe your symptoms")
       return
     }
 
@@ -195,83 +246,211 @@ const SymptomAnalyzer = () => {
     setAnalysisProgress(0)
     setCurrentStep("Initializing analysis...")
 
-    try {
-      const response = await apiClient.post("/symptoms/analyze", {
-        symptoms: symptoms
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0),
-        temperature: temperature
-          ? {
-              value: Number.parseFloat(temperature),
-              unit: temperatureUnit,
-            }
-          : undefined,
-        emotions: emotions
-          .split(",")
-          .map((e) => e.trim())
-          .filter((e) => e.length > 0),
-        painLevel,
-        symptomDuration,
-        language: "en",
-      })
+    // Simulate progress updates
+    const steps = [
+      { progress: 10, step: "Initializing analysis..." },
+      { progress: 25, step: "Processing symptoms..." },
+      { progress: 50, step: "Analyzing with AI..." },
+      { progress: 80, step: "Generating recommendations..." },
+      { progress: 95, step: "Finalizing results..." },
+      { progress: 100, step: "Analysis complete!" }
+    ]
 
-      if (response.data.success) {
-        setResult(response.data.data.analysis)
-        setSessionId(response.data.data.sessionId)
-        toast.success("✅ Analysis completed successfully!")
-      } else {
-        throw new Error(response.data.message)
-      }
-    } catch (error: any) {
-      console.error("Analysis error:", error)
-      toast.error(error.response?.data?.message || "Failed to analyze symptoms")
-    } finally {
-      setIsAnalyzing(false)
+    for (const step of steps) {
+      await new Promise(resolve => setTimeout(resolve, 800))
+      setAnalysisProgress(step.progress)
+      setCurrentStep(step.step)
     }
+
+    // Mock result data
+    const mockResult: AnalysisResult = {
+      possibleConditions: [
+        {
+          name: "Common Cold",
+          probability: 85,
+          severity: "low",
+          description: "A viral upper respiratory tract infection",
+          symptoms: symptoms.split(",").map(s => s.trim()),
+          causes: ["Rhinovirus", "Coronavirus", "Respiratory syncytial virus"],
+          riskFactors: ["Close contact with infected individuals", "Weakened immune system"],
+          treatmentSummary: "Rest, hydration, and symptomatic relief",
+          prognosis: "Self-limiting, resolves in 7-10 days"
+        },
+        {
+          name: "Viral Fever",
+          probability: 70,
+          severity: "medium",
+          description: "Fever caused by viral infection",
+          symptoms: ["fever", "fatigue", "body aches"],
+          causes: ["Various viral pathogens"],
+          riskFactors: ["Seasonal changes", "Immune system status"],
+          treatmentSummary: "Antipyretics and supportive care"
+        }
+      ],
+      recommendations: {
+        immediateActions: [
+          "Rest and get adequate sleep (8-9 hours)",
+          "Stay well hydrated with warm fluids",
+          "Monitor temperature regularly",
+          "Maintain good hygiene practices"
+        ],
+        medicines: [
+          {
+            name: "Paracetamol 500mg",
+            genericName: "Acetaminophen",
+            dosage: "500mg",
+            frequency: "Every 6-8 hours",
+            duration: "3-5 days",
+            instructions: "Take with food to avoid stomach upset",
+            sideEffects: ["Rare allergic reactions", "Liver toxicity with overdose"],
+            contraindications: ["Liver disease", "Allergy to paracetamol"],
+            price: { min: 15, max: 30, currency: "NPR" },
+            alternatives: ["Ibuprofen", "Aspirin"],
+            image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&crop=center",
+            effectiveness: 85,
+            prescription: false,
+            availability: "Available at all pharmacies",
+            manufacturer: "Multiple brands available"
+          },
+          {
+            name: "Cetirizine 10mg",
+            genericName: "Cetirizine Hydrochloride",
+            dosage: "10mg",
+            frequency: "Once daily",
+            duration: "5-7 days",
+            instructions: "Take in the evening to avoid drowsiness",
+            sideEffects: ["Mild drowsiness", "Dry mouth"],
+            contraindications: ["Severe kidney disease"],
+            price: { min: 25, max: 50, currency: "NPR" },
+            alternatives: ["Loratadine", "Fexofenadine"],
+            image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=200&h=200&fit=crop&crop=center",
+            effectiveness: 78,
+            prescription: false,
+            availability: "Over-the-counter",
+            manufacturer: "Various pharmaceutical companies"
+          },
+          {
+            name: "Vitamin C 500mg",
+            genericName: "Ascorbic Acid",
+            dosage: "500mg",
+            frequency: "Twice daily",
+            duration: "1-2 weeks",
+            instructions: "Take with meals for better absorption",
+            sideEffects: ["Stomach upset in high doses"],
+            contraindications: ["Kidney stones history"],
+            price: { min: 35, max: 75, currency: "NPR" },
+            alternatives: ["Natural vitamin C sources", "Multivitamins"],
+            image: "https://images.unsplash.com/photo-1550572017-4346573d96b3?w=200&h=200&fit=crop&crop=center",
+            effectiveness: 70,
+            prescription: false,
+            availability: "Widely available",
+            manufacturer: "Health supplement companies"
+          }
+        ],
+        homeRemedies: [
+          {
+            name: "Ginger Honey Tea",
+            description: "Natural anti-inflammatory and antimicrobial remedy",
+            ingredients: ["Fresh ginger (1 inch)", "Honey (2 tbsp)", "Hot water (1 cup)"],
+            preparation: "Boil ginger in water for 5 minutes, add honey",
+            usage: "Drink 2-3 times daily while warm",
+            precautions: ["Avoid if allergic to ginger"],
+            effectiveness: 75,
+            image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=200&fit=crop&crop=center"
+          },
+          {
+            name: "Turmeric Milk",
+            description: "Traditional remedy with anti-inflammatory properties",
+            ingredients: ["Turmeric powder (1 tsp)", "Warm milk (1 cup)", "Honey (optional)"],
+            preparation: "Mix turmeric in warm milk, add honey",
+            usage: "Drink before bedtime",
+            precautions: ["May stain clothes", "Avoid if lactose intolerant"],
+            effectiveness: 68,
+            image: "https://images.unsplash.com/photo-1615485925161-c25f2b9e3d86?w=200&h=200&fit=crop&crop=center"
+          }
+        ],
+        lifestyle: {
+          diet: {
+            recommended: [
+              "Warm soups and broths",
+              "Fresh fruits rich in vitamin C",
+              "Vegetables with antioxidants",
+              "Herbal teas",
+              "Whole grains"
+            ],
+            avoid: [
+              "Cold and frozen foods",
+              "Fried and fatty foods",
+              "Excessive sugar",
+              "Alcohol and smoking"
+            ],
+            supplements: ["Vitamin D", "Zinc", "Probiotics"]
+          },
+          exercise: {
+            recommended: [
+              "Light walking for 15-20 minutes",
+              "Deep breathing exercises",
+              "Gentle stretching"
+            ],
+            avoid: ["Intense physical activity", "Outdoor sports in cold weather"],
+            duration: "15-30 minutes of light activity"
+          },
+          sleep: {
+            duration: "8-9 hours for optimal recovery",
+            position: "Slightly elevated head to ease breathing",
+            environment: ["Keep room temperature at 20-22°C", "Maintain good ventilation"]
+          }
+        },
+        followUp: {
+          timeframe: "If symptoms persist beyond 7 days",
+          symptoms: ["High fever above 101°F", "Difficulty breathing", "Severe headache"],
+          tests: ["Complete blood count if fever persists"]
+        }
+      },
+      doctorConsultation: {
+        required: painLevel > 7,
+        urgency: painLevel > 8 ? "immediate" : "within-week",
+        specialization: ["General Practitioner"],
+        reasons: ["Professional medical evaluation needed"]
+      },
+      confidence: 85,
+      riskLevel: painLevel > 7 ? "high" : "medium",
+      analysisTime: 3200
+    }
+
+    setResult(mockResult)
+    setIsAnalyzing(false)
+    setSessionId("mock-session-" + Date.now())
   }
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "low":
-        return "text-green-400"
-      case "medium":
-        return "text-yellow-400"
-      case "high":
-        return "text-red-400"
-      case "critical":
-        return "text-red-600"
-      default:
-        return "text-gray-400"
+      case "low": return "text-green-400"
+      case "medium": return "text-yellow-400"
+      case "high": return "text-red-400"
+      case "critical": return "text-red-600"
+      default: return "text-gray-400"
     }
   }
 
   const getSeverityBg = (severity: string) => {
     switch (severity) {
-      case "low":
-        return "bg-green-400/10"
-      case "medium":
-        return "bg-yellow-400/10"
-      case "high":
-        return "bg-red-400/10"
-      case "critical":
-        return "bg-red-600/10"
-      default:
-        return "bg-gray-400/10"
+      case "low": return "bg-green-400/10"
+      case "medium": return "bg-yellow-400/10"
+      case "high": return "bg-red-400/10"
+      case "critical": return "bg-red-600/10"
+      default: return "bg-gray-400/10"
     }
   }
 
   const speakAnalysisResult = (result: AnalysisResult) => {
     if ("speechSynthesis" in window && result.possibleConditions.length > 0) {
       const condition = result.possibleConditions[0]
-      const text = `Analysis complete. You may have ${condition.name} with ${condition.severity} severity. 
-        Confidence level is ${result.confidence} percent. 
-        ${result.doctorConsultation.required ? "Doctor consultation is recommended." : "You can manage this with home care."}`
-
+      const text = `Analysis complete. You may have ${condition.name} with ${condition.severity} severity. Confidence level is ${result.confidence} percent.`
+      
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = "en-US"
       utterance.rate = 0.8
-      utterance.pitch = 1
       speechSynthesis.speak(utterance)
     }
   }
@@ -284,41 +463,38 @@ const SymptomAnalyzer = () => {
   }
 
   return (
-    <div className="min-h-screen pt-16 pb-8">
+    <div className="min-h-screen pt-16 pb-8 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="text-center mb-8"
+        >
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Activity className="w-8 h-8 text-red-400 animate-pulse" />
-            <h1 className="text-4xl font-bold neon-text">🩺 AI Symptom Analyzer</h1>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+              🩺 AI Symptom Analyzer
+            </h1>
           </div>
           <p className="text-gray-400 max-w-3xl mx-auto mb-6 text-lg">
-            Describe your symptoms and get instant AI-powered health analysis with personalized medicine recommendations. 
-            Our advanced system provides real-time insights and comprehensive treatment suggestions.
+            Describe your symptoms and get instant AI-powered health analysis with personalized medicine recommendations.
           </p>
 
           <div className="flex items-center justify-center space-x-4 mb-6">
-            <div className="flex items-center space-x-2 px-4 py-2 bg-blue-400/20 rounded-lg">
+            <div className="flex items-center space-x-2 px-4 py-2 bg-blue-400/20 rounded-lg backdrop-blur-sm">
               <Zap className="w-4 h-4 text-blue-400" />
               <span className="text-blue-400 text-sm">Real-time Analysis</span>
             </div>
-            <div className="flex items-center space-x-2 px-4 py-2 bg-green-400/20 rounded-lg">
+            <div className="flex items-center space-x-2 px-4 py-2 bg-green-400/20 rounded-lg backdrop-blur-sm">
               <Shield className="w-4 h-4 text-green-400" />
               <span className="text-green-400 text-sm">95% Accuracy</span>
             </div>
-            <div className="flex items-center space-x-2 px-4 py-2 bg-purple-400/20 rounded-lg">
+            <div className="flex items-center space-x-2 px-4 py-2 bg-purple-400/20 rounded-lg backdrop-blur-sm">
               <TrendingUp className="w-4 h-4 text-purple-400" />
               <span className="text-purple-400 text-sm">Multiple Medicines</span>
             </div>
           </div>
-
-          <button
-            onClick={() => setShowVoiceTutorial(true)}
-            className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-400/20 text-blue-400 rounded-lg hover:bg-blue-400/30 transition-colors glass btn-3d-primary"
-          >
-            <Mic className="w-5 h-5" />
-            <span>🎤 Learn Voice Features</span>
-          </button>
         </motion.div>
 
         {/* Input Form */}
@@ -326,7 +502,7 @@ const SymptomAnalyzer = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass p-8 rounded-xl mb-8 shadow-3d"
+          className="bg-gray-800/50 backdrop-blur-lg p-8 rounded-xl mb-8 border border-gray-700/50"
         >
           <div className="space-y-6">
             {/* Symptoms Input with Real-time Detection */}
@@ -334,7 +510,7 @@ const SymptomAnalyzer = () => {
               <VoiceRecognition
                 value={symptoms}
                 onChange={setSymptoms}
-                placeholder="e.g., fever, headache, cough, sore throat... or click Voice to speak"
+                placeholder="e.g., fever, headache, cough, sore throat..."
                 label="🤒 Describe your symptoms *"
                 isTextArea={true}
                 language="en-US"
@@ -376,10 +552,10 @@ const SymptomAnalyzer = () => {
                     value={temperature}
                     onChange={(e) => setTemperature(e.target.value)}
                     placeholder="37.5"
-                    className="glow-input flex-1 rounded-r-none"
+                    className="flex-1 p-3 bg-gray-800/50 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     step="0.1"
                   />
-                  <div className="flex glass border-l-0 rounded-l-none rounded-r-lg">
+                  <div className="flex bg-gray-800/50 border border-l-0 border-gray-600 rounded-r-lg">
                     <button
                       type="button"
                       onClick={() => setTemperatureUnit("C")}
@@ -415,7 +591,10 @@ const SymptomAnalyzer = () => {
                     max="10"
                     value={painLevel}
                     onChange={(e) => setPainLevel(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    className="w-full h-2 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%)`
+                    }}
                   />
                   <div className="flex justify-between text-xs text-gray-400 mt-1">
                     <span>No Pain</span>
@@ -434,7 +613,7 @@ const SymptomAnalyzer = () => {
                 <select
                   value={symptomDuration}
                   onChange={(e) => setSymptomDuration(e.target.value)}
-                  className="glow-input w-full"
+                  className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select duration</option>
                   <option value="less-than-hour">Less than 1 hour</option>
@@ -452,7 +631,7 @@ const SymptomAnalyzer = () => {
             <VoiceRecognition
               value={emotions}
               onChange={setEmotions}
-              placeholder="tired, anxious, weak, stressed... or click Voice to speak"
+              placeholder="tired, anxious, weak, stressed..."
               label="😔 How are you feeling emotionally?"
               language="en-US"
             />
@@ -460,14 +639,14 @@ const SymptomAnalyzer = () => {
             {/* Analyze Button */}
             <div className="space-y-4">
               <button
-                onClick={handleAnalyze}
+                onClick={analyzeSymptoms}
                 disabled={isAnalyzing || !symptoms.trim()}
-                className="glow-button w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 btn-3d-primary relative overflow-hidden"
+                className="w-full py-4 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-all duration-300 transform hover:scale-[1.02]"
               >
                 {isAnalyzing ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span className="loading-dots">🔍 {currentStep || "Analyzing symptoms"}</span>
+                    <span>{currentStep || "Analyzing symptoms"}</span>
                   </>
                 ) : (
                   <>
@@ -514,26 +693,24 @@ const SymptomAnalyzer = () => {
               className="space-y-6"
             >
               {/* Condition Overview */}
-              <div className="glass p-6 rounded-xl shadow-3d">
+              <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
                     <Brain className="w-8 h-8 text-blue-400" />
                     <div>
-                      <h3 className="text-2xl font-bold">{result.possibleConditions[0]?.name}</h3>
+                      <h3 className="text-2xl font-bold text-white">{result.possibleConditions[0]?.name}</h3>
                       <p className="text-gray-400">{result.possibleConditions[0]?.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => speakAnalysisResult(result)}
-                      className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm bg-green-400/20 text-green-400 hover:bg-green-400/30 transition-all duration-300 btn-3d-success"
+                      className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm bg-green-400/20 text-green-400 hover:bg-green-400/30 transition-colors"
                     >
                       <Volume2 className="w-4 h-4" />
                       <span>🔊 Listen</span>
                     </button>
-                    <div
-                      className={`px-4 py-2 rounded-full text-sm font-medium ${getSeverityBg(result.riskLevel)} ${getSeverityColor(result.riskLevel)}`}
-                    >
+                    <div className={`px-4 py-2 rounded-full text-sm font-medium ${getSeverityBg(result.riskLevel)} ${getSeverityColor(result.riskLevel)}`}>
                       {result.riskLevel.toUpperCase()} RISK
                     </div>
                   </div>
@@ -580,8 +757,8 @@ const SymptomAnalyzer = () => {
 
               {/* Enhanced Medicines Section */}
               {result.recommendations.medicines.length > 0 && (
-                <div className="glass p-6 rounded-xl shadow-3d">
-                  <h4 className="text-2xl font-semibold mb-6 flex items-center space-x-2">
+                <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50">
+                  <h4 className="text-2xl font-semibold mb-6 flex items-center space-x-2 text-white">
                     <Pill className="w-6 h-6 text-green-400" />
                     <span>💊 Recommended Medicines</span>
                     <span className="text-sm text-gray-400">({result.recommendations.medicines.length} options)</span>
@@ -594,12 +771,12 @@ const SymptomAnalyzer = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="glass p-4 rounded-lg shadow-3d hover:shadow-xl transition-all duration-300 border border-gray-700/50 hover:border-green-400/30"
+                        className="bg-gray-700/50 p-4 rounded-lg border border-gray-600/50 hover:border-green-400/30 transition-all duration-300 hover:transform hover:scale-[1.02]"
                       >
                         <div className="flex items-center space-x-3 mb-4">
                           <div className="relative">
                             <img
-                              src={medicine.image || `https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&h=100&fit=crop&crop=center`}
+                              src={medicine.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&h=100&fit=crop&crop=center"}
                               alt={medicine.name}
                               className="w-16 h-16 rounded-lg object-cover"
                             />
@@ -610,7 +787,7 @@ const SymptomAnalyzer = () => {
                             )}
                           </div>
                           <div className="flex-1">
-                            <h5 className="font-semibold text-lg">{medicine.name}</h5>
+                            <h5 className="font-semibold text-lg text-white">{medicine.name}</h5>
                             <p className="text-sm text-gray-400">{medicine.genericName}</p>
                             {medicine.prescription && (
                               <span className="inline-block mt-1 px-2 py-1 bg-orange-400/20 text-orange-400 text-xs rounded">
@@ -624,11 +801,11 @@ const SymptomAnalyzer = () => {
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
                               <span className="text-gray-400">Dosage:</span>
-                              <p className="font-medium">{medicine.dosage}</p>
+                              <p className="font-medium text-white">{medicine.dosage}</p>
                             </div>
                             <div>
                               <span className="text-gray-400">Duration:</span>
-                              <p className="font-medium">{medicine.duration}</p>
+                              <p className="font-medium text-white">{medicine.duration}</p>
                             </div>
                           </div>
 
@@ -649,7 +826,7 @@ const SymptomAnalyzer = () => {
                           </div>
 
                           {medicine.alternatives.length > 0 && (
-                            <div className="pt-2 border-t border-gray-700/50">
+                            <div className="pt-2 border-t border-gray-600/50">
                               <p className="text-xs text-blue-400">
                                 <strong>Alternatives:</strong> {medicine.alternatives.slice(0, 2).join(", ")}
                               </p>
@@ -664,8 +841,8 @@ const SymptomAnalyzer = () => {
 
               {/* Enhanced Home Remedies */}
               {result.recommendations.homeRemedies.length > 0 && (
-                <div className="glass p-6 rounded-xl shadow-3d">
-                  <h4 className="text-2xl font-semibold mb-6 flex items-center space-x-2">
+                <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50">
+                  <h4 className="text-2xl font-semibold mb-6 flex items-center space-x-2 text-white">
                     <Home className="w-6 h-6 text-blue-400" />
                     <span>🏠 Natural Home Remedies</span>
                   </h4>
@@ -677,16 +854,16 @@ const SymptomAnalyzer = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="glass p-4 rounded-lg shadow-3d"
+                        className="bg-gray-700/50 p-4 rounded-lg border border-gray-600/50"
                       >
                         <div className="flex items-center space-x-3 mb-3">
                           <img
-                            src={remedy.image || `https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=100&h=100&fit=crop&crop=center`}
+                            src={remedy.image || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=100&h=100&fit=crop&crop=center"}
                             alt={remedy.name}
                             className="w-12 h-12 rounded-lg object-cover"
                           />
                           <div>
-                            <h5 className="font-semibold">{remedy.name}</h5>
+                            <h5 className="font-semibold text-white">{remedy.name}</h5>
                             {remedy.effectiveness && (
                               <div className="flex items-center space-x-1">
                                 <Star className="w-3 h-3 text-yellow-400" />
@@ -709,42 +886,9 @@ const SymptomAnalyzer = () => {
                 </div>
               )}
 
-              {/* Multiple Conditions Analysis */}
-              {result.possibleConditions.length > 1 && (
-                <div className="glass p-6 rounded-xl shadow-3d">
-                  <h4 className="text-2xl font-semibold mb-6 flex items-center space-x-2">
-                    <Eye className="w-6 h-6 text-purple-400" />
-                    <span>🔍 Other Possible Conditions</span>
-                  </h4>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {result.possibleConditions.slice(1, 4).map((condition, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="glass p-4 rounded-lg border border-purple-400/20"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h5 className="font-semibold">{condition.name}</h5>
-                          <span className={`px-2 py-1 rounded text-xs ${getSeverityBg(condition.severity)} ${getSeverityColor(condition.severity)}`}>
-                            {condition.probability}%
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-400">{condition.description}</p>
-                        {condition.treatmentSummary && (
-                          <p className="text-xs text-blue-400 mt-2">💡 {condition.treatmentSummary}</p>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Food Recommendations */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="glass p-6 rounded-xl shadow-3d">
+                <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50">
                   <h4 className="text-xl font-semibold mb-4 text-green-400 flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5" />
                     <span>🥗 Foods to Eat</span>
@@ -765,7 +909,7 @@ const SymptomAnalyzer = () => {
                   </ul>
                 </div>
 
-                <div className="glass p-6 rounded-xl shadow-3d">
+                <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50">
                   <h4 className="text-xl font-semibold mb-4 text-red-400 flex items-center space-x-2">
                     <AlertTriangle className="w-5 h-5" />
                     <span>🚫 Foods to Avoid</span>
@@ -789,7 +933,7 @@ const SymptomAnalyzer = () => {
 
               {/* Emergency Contact */}
               {result.doctorConsultation.required && (
-                <div className="glass p-6 rounded-xl border border-red-400/20 shadow-3d">
+                <div className="bg-gray-800/50 backdrop-blur-lg p-6 rounded-xl border border-red-400/20">
                   <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2 text-red-400">
                     <Phone className="w-5 h-5" />
                     <span>🚨 Emergency Contacts</span>
@@ -798,26 +942,26 @@ const SymptomAnalyzer = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <a
                       href="tel:102"
-                      className="flex items-center space-x-3 p-4 bg-red-400/10 rounded-lg hover:bg-red-400/20 transition-colors btn-3d-danger"
+                      className="flex items-center space-x-3 p-4 bg-red-400/10 rounded-lg hover:bg-red-400/20 transition-colors"
                     >
                       <div className="w-12 h-12 bg-red-400/20 rounded-lg flex items-center justify-center">
                         <Phone className="w-6 h-6 text-red-400" />
                       </div>
                       <div>
-                        <p className="font-semibold">🚑 Emergency Ambulance</p>
+                        <p className="font-semibold text-white">🚑 Emergency Ambulance</p>
                         <p className="text-sm text-gray-400">Call 102 - 24/7 Available</p>
                       </div>
                     </a>
 
                     <a
                       href="tel:1166"
-                      className="flex items-center space-x-3 p-4 bg-blue-400/10 rounded-lg hover:bg-blue-400/20 transition-colors btn-3d-primary"
+                      className="flex items-center space-x-3 p-4 bg-blue-400/10 rounded-lg hover:bg-blue-400/20 transition-colors"
                     >
                       <div className="w-12 h-12 bg-blue-400/20 rounded-lg flex items-center justify-center">
                         <Phone className="w-6 h-6 text-blue-400" />
                       </div>
                       <div>
-                        <p className="font-semibold">🏥 Health Hotline</p>
+                        <p className="font-semibold text-white">🏥 Health Hotline</p>
                         <p className="text-sm text-gray-400">Call 1166 - Free Consultation</p>
                       </div>
                     </a>
@@ -827,19 +971,82 @@ const SymptomAnalyzer = () => {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Voice Tutorial */}
-        <VoiceTutorial isOpen={showVoiceTutorial} onClose={() => setShowVoiceTutorial(false)} />
-
-        {/* Login Prompt */}
-        <LoginPrompt
-          isOpen={showLoginPrompt}
-          onClose={() => setShowLoginPrompt(false)}
-          message="Please login to analyze your symptoms and get personalized health recommendations with multiple medicine suggestions."
-        />
       </div>
+
+      {/* CSS Styles */}
+      <style jsx global>{`
+        .voice-active {
+          animation: voice-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes voice-pulse {
+          0%, 100% {
+            border-color: rgba(34, 197, 94, 0.5);
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+          }
+          50% {
+            border-color: rgba(34, 197, 94, 0.8);
+            box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+          }
+        }
+
+        input[type="range"] {
+          -webkit-appearance: none;
+          appearance: none;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-track {
+          background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+          height: 8px;
+          border-radius: 4px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+          appearance: none;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 2px solid #3b82f6;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+          transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+        }
+
+        input[type="range"]::-moz-range-track {
+          background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+          height: 8px;
+          border-radius: 4px;
+          border: none;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 2px solid #3b82f6;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+      `}</style>
     </div>
   )
+}
+
+// Type declarations for Speech Recognition
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
 }
 
 export default SymptomAnalyzer

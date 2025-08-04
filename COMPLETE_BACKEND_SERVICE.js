@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
-import { logger } from "../utils/logger.js"
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "your-gemini-api-key");
 
-// Medicine image placeholders for common medicines
+// Medicine image mapping for better visual presentation
 const getMedicineImage = (medicineName) => {
   const medicineImages = {
     "paracetamol": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&crop=center",
@@ -13,19 +13,21 @@ const getMedicineImage = (medicineName) => {
     "azithromycin": "https://images.unsplash.com/photo-1628771065518-0d82ee7ad6ce?w=200&h=200&fit=crop&crop=center",
     "cough syrup": "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=200&h=200&fit=crop&crop=center",
     "vitamin c": "https://images.unsplash.com/photo-1550572017-4346573d96b3?w=200&h=200&fit=crop&crop=center",
-    "omeprazole": "https://images.unsplash.com/photo-1576671116405-1a02f1b31b27?w=200&h=200&fit=crop&crop=center"
-  }
+    "cetirizine": "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=200&h=200&fit=crop&crop=center",
+    "omeprazole": "https://images.unsplash.com/photo-1576671116405-1a02f1b31b27?w=200&h=200&fit=crop&crop=center",
+    "metformin": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&crop=center"
+  };
   
-  const lowerName = medicineName.toLowerCase()
+  const lowerName = medicineName.toLowerCase();
   for (const [key, image] of Object.entries(medicineImages)) {
     if (lowerName.includes(key)) {
-      return image
+      return image;
     }
   }
-  return "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&crop=center"
-}
+  return "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop&crop=center";
+};
 
-// Home remedy image placeholders
+// Home remedy image mapping
 const getRemedyImage = (remedyName) => {
   const remedyImages = {
     "ginger": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=200&fit=crop&crop=center",
@@ -36,18 +38,19 @@ const getRemedyImage = (remedyName) => {
     "steam": "https://images.unsplash.com/photo-1573883433991-b5abe5e1a5cf?w=200&h=200&fit=crop&crop=center",
     "tea": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=200&fit=crop&crop=center",
     "salt water": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop&crop=center"
-  }
+  };
   
-  const lowerName = remedyName.toLowerCase()
+  const lowerName = remedyName.toLowerCase();
   for (const [key, image] of Object.entries(remedyImages)) {
     if (lowerName.includes(key)) {
-      return image
+      return image;
     }
   }
-  return "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=200&fit=crop&crop=center"
-}
+  return "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200&h=200&fit=crop&crop=center";
+};
 
-export const analyzeSymptoms = async ({
+// Main symptom analysis function
+const analyzeSymptoms = async ({
   symptoms,
   temperature,
   emotions = [],
@@ -59,7 +62,7 @@ export const analyzeSymptoms = async ({
   symptomDuration = "",
 }) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `
 You are a highly advanced medical AI assistant for Medicare Nepal with expertise in tropical medicine, infectious diseases, and common health conditions in South Asia. Analyze the following symptoms and provide a comprehensive, accurate health assessment.
@@ -101,8 +104,7 @@ Please provide a detailed analysis in JSON format with the following enhanced st
       "riskFactors": ["relevant risk factors"],
       "treatmentSummary": "Brief treatment approach",
       "complications": ["potential complications if untreated"],
-      "prognosis": "Expected outcome with treatment",
-      "image": "condition_image_url_if_applicable"
+      "prognosis": "Expected outcome with treatment"
     }
   ],
   "recommendations": {
@@ -123,7 +125,6 @@ Please provide a detailed analysis in JSON format with the following enhanced st
         "contraindications": ["when not to use"],
         "price": {"min": 50, "max": 150, "currency": "NPR"},
         "alternatives": ["alternative medicines"],
-        "image": "medicine_image_url",
         "effectiveness": 85,
         "prescription": true/false,
         "availability": "Available at pharmacies",
@@ -140,7 +141,6 @@ Please provide a detailed analysis in JSON format with the following enhanced st
         "contraindications": ["contraindications"],
         "price": {"min": 30, "max": 80, "currency": "NPR"},
         "alternatives": ["alternatives"],
-        "image": "medicine_image_url",
         "effectiveness": 78,
         "prescription": false,
         "availability": "Over-the-counter",
@@ -157,7 +157,6 @@ Please provide a detailed analysis in JSON format with the following enhanced st
         "contraindications": ["contraindications"],
         "price": {"min": 25, "max": 60, "currency": "NPR"},
         "alternatives": ["alternatives"],
-        "image": "medicine_image_url",
         "effectiveness": 72,
         "prescription": false,
         "availability": "Widely available",
@@ -172,8 +171,7 @@ Please provide a detailed analysis in JSON format with the following enhanced st
         "preparation": "Step-by-step preparation",
         "usage": "How and when to use",
         "precautions": ["safety precautions"],
-        "effectiveness": 75,
-        "image": "remedy_image_url"
+        "effectiveness": 75
       },
       {
         "name": "Second remedy option",
@@ -182,8 +180,7 @@ Please provide a detailed analysis in JSON format with the following enhanced st
         "preparation": "Simple preparation method",
         "usage": "Usage instructions",
         "precautions": ["precautions"],
-        "effectiveness": 68,
-        "image": "remedy_image_url"
+        "effectiveness": 68
       }
     ],
     "lifestyle": {
@@ -253,8 +250,7 @@ Please provide a detailed analysis in JSON format with the following enhanced st
   },
   "confidence": 85,
   "riskLevel": "low/medium/high/critical",
-  "analysisTime": 2.5,
-  "sessionId": "analysis_session_id"
+  "analysisTime": 2.5
 }
 
 Critical Guidelines:
@@ -269,58 +265,49 @@ Critical Guidelines:
 9. Consider altitude-related health impacts if applicable
 10. Factor in monsoon-related health risks
 11. Provide effectiveness ratings (60-95% range)
-12. Include proper images for medicines and remedies
-13. Consider drug interactions and contraindications
-14. Provide multiple alternative treatment approaches
-15. Include preventive measures for future episodes
+12. Consider drug interactions and contraindications
+13. Provide multiple alternative treatment approaches
+14. Include preventive measures for future episodes
 
 For ${language === 'ne' ? 'Nepali' : language === 'hi' ? 'Hindi' : 'English'} language output, provide medical terms in both English and local language where applicable.
 
 Respond only with valid JSON without any additional text or explanations.
-`
+`;
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const text = response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
     // Parse JSON response
-    let analysis
+    let analysis;
     try {
       // Clean the response to ensure it's valid JSON
-      const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim()
-      analysis = JSON.parse(cleanedText)
+      const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
+      analysis = JSON.parse(cleanedText);
       
       // Add images to medicines and remedies
       if (analysis.recommendations?.medicines) {
         analysis.recommendations.medicines = analysis.recommendations.medicines.map(medicine => ({
           ...medicine,
-          image: medicine.image || getMedicineImage(medicine.name),
+          image: getMedicineImage(medicine.name),
           effectiveness: medicine.effectiveness || Math.floor(Math.random() * 25) + 70, // 70-95%
           prescription: medicine.prescription !== undefined ? medicine.prescription : medicine.name.toLowerCase().includes('antibiotic'),
           availability: medicine.availability || "Available at most pharmacies",
           manufacturer: medicine.manufacturer || "Local Pharmaceutical Company"
-        }))
+        }));
       }
       
       if (analysis.recommendations?.homeRemedies) {
         analysis.recommendations.homeRemedies = analysis.recommendations.homeRemedies.map(remedy => ({
           ...remedy,
-          image: remedy.image || getRemedyImage(remedy.name),
+          image: getRemedyImage(remedy.name),
           effectiveness: remedy.effectiveness || Math.floor(Math.random() * 20) + 60 // 60-80%
-        }))
-      }
-      
-      // Ensure multiple conditions are provided for better analysis
-      if (analysis.possibleConditions && analysis.possibleConditions.length === 1) {
-        // Add related conditions for comprehensive analysis
-        const primaryCondition = analysis.possibleConditions[0]
-        const relatedConditions = generateRelatedConditions(symptoms, primaryCondition)
-        analysis.possibleConditions = [primaryCondition, ...relatedConditions]
+        }));
       }
       
     } catch (parseError) {
-      logger.error(`Failed to parse Gemini response: ${parseError.message}`)
-      logger.error(`Raw response: ${text}`)
+      console.error(`Failed to parse Gemini response: ${parseError.message}`);
+      console.error(`Raw response: ${text}`);
       
       // Enhanced fallback response with multiple medicines and better analysis
       analysis = {
@@ -507,256 +494,19 @@ Respond only with valid JSON without any additional text or explanations.
         confidence: 75,
         riskLevel: painLevel > 7 ? "high" : "medium",
         analysisTime: 2.1
-      }
+      };
     }
 
-    return analysis
+    return analysis;
   } catch (error) {
-    logger.error(`Gemini symptom analysis error: ${error.message}`)
-    throw new Error("Failed to analyze symptoms using AI")
+    console.error(`Gemini symptom analysis error: ${error.message}`);
+    throw new Error("Failed to analyze symptoms using AI");
   }
-}
+};
 
-// Helper function to generate related conditions
-const generateRelatedConditions = (symptoms, primaryCondition) => {
-  const commonRelatedConditions = [
-    {
-      name: "Viral Upper Respiratory Infection",
-      probability: 60,
-      severity: "low",
-      description: "Common viral infection affecting nose, throat, and sinuses",
-      symptoms: symptoms.filter(s => ['cough', 'runny nose', 'sore throat'].some(resp => s.toLowerCase().includes(resp))),
-      causes: ["Rhinovirus", "Coronavirus", "Seasonal exposure"],
-      riskFactors: ["Close contact with infected persons", "Weakened immunity"],
-      treatmentSummary: "Symptomatic relief and rest"
-    },
-    {
-      name: "Seasonal Allergy",
-      probability: 45,
-      severity: "low",
-      description: "Allergic reaction to environmental triggers",
-      symptoms: symptoms.filter(s => ['sneezing', 'itching', 'runny nose'].some(allergy => s.toLowerCase().includes(allergy))),
-      causes: ["Pollen", "Dust mites", "Environmental allergens"],
-      riskFactors: ["History of allergies", "Seasonal changes"],
-      treatmentSummary: "Antihistamines and allergen avoidance"
-    }
-  ]
-  
-  return commonRelatedConditions.slice(0, 2) // Return up to 2 related conditions
-}
-
-export const getMedicineInfo = async ({
-  medicineName,
-  detectedText = [],
-  objects = [],
-  additionalInfo = "",
-  language = "en",
-}) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" })
-
-    const prompt = `
-You are a pharmaceutical AI assistant for Medicare Nepal. Analyze the following medicine information and provide comprehensive details.
-
-Medicine Information:
-- Medicine Name: ${medicineName || "Not provided"}
-- Detected Text from Image: ${detectedText.join(", ") || "None"}
-- Detected Objects: ${objects.join(", ") || "None"}
-- Additional Information: ${additionalInfo || "None"}
-- Language: ${language}
-
-Please provide detailed medicine information in JSON format with the following structure:
-{
-  "medicine": {
-    "name": "Medicine name",
-    "nameNepali": "नेपाली नाम (if language is ne)",
-    "nameHindi": "हिंदी नाम (if language is hi)",
-    "genericName": "Generic name",
-    "brandNames": ["brand names"],
-    "manufacturer": "Manufacturer name",
-    "category": "Medicine category",
-    "classification": "Therapeutic classification"
-  },
-  "composition": [
-    {
-      "ingredient": "Active ingredient",
-      "strength": "Strength amount",
-      "unit": "mg/ml/etc",
-      "percentage": 100
-    }
-  ],
-  "indications": {
-    "primary": ["primary uses"],
-    "secondary": ["secondary uses"],
-    "offLabel": ["off-label uses"]
-  },
-  "dosage": {
-    "adults": {
-      "standard": "Standard adult dose",
-      "maximum": "Maximum daily dose",
-      "frequency": "How often per day"
-    },
-    "children": {
-      "standard": "Pediatric dose",
-      "maximum": "Maximum pediatric dose",
-      "frequency": "How often per day",
-      "ageRestriction": "Age restrictions"
-    },
-    "elderly": {
-      "standard": "Elderly dose",
-      "adjustments": "Special considerations"
-    }
-  },
-  "administration": {
-    "route": ["oral", "topical", "injection"],
-    "timing": "Before/after meals, etc",
-    "instructions": ["special instructions"],
-    "storage": "Storage requirements"
-  },
-  "sideEffects": {
-    "common": ["common side effects"],
-    "serious": ["serious side effects"],
-    "rare": ["rare side effects"],
-    "allergicReactions": ["allergic reaction signs"]
-  },
-  "contraindications": {
-    "absolute": ["absolute contraindications"],
-    "relative": ["relative contraindications"],
-    "pregnancy": "Pregnancy category/advice",
-    "breastfeeding": "Breastfeeding advice",
-    "pediatric": "Pediatric considerations",
-    "geriatric": "Geriatric considerations"
-  },
-  "interactions": {
-    "drugs": [
-      {
-        "name": "Interacting drug",
-        "severity": "mild/moderate/severe",
-        "description": "Interaction description"
-      }
-    ],
-    "food": [
-      {
-        "item": "Food item",
-        "effect": "Effect description",
-        "recommendation": "What to do"
-      }
-    ],
-    "alcohol": "Alcohol interaction advice",
-    "supplements": ["supplement interactions"]
-  },
-  "alternatives": {
-    "generic": [
-      {
-        "name": "Generic alternative",
-        "manufacturer": "Manufacturer",
-        "price": 50
-      }
-    ],
-    "therapeutic": [
-      {
-        "name": "Therapeutic alternative",
-        "similarity": 85,
-        "advantages": ["advantages"],
-        "disadvantages": ["disadvantages"]
-      }
-    ],
-    "natural": [
-      {
-        "name": "Natural alternative",
-        "description": "How it works",
-        "effectiveness": "Effectiveness level",
-        "preparation": "How to prepare/use"
-      }
-    ]
-  },
-  "pricing": {
-    "current": {
-      "min": 50,
-      "max": 100,
-      "average": 75,
-      "currency": "NPR"
-    }
-  },
-  "availability": {
-    "prescription": {
-      "required": true/false,
-      "type": "OTC/prescription/controlled"
-    },
-    "pharmacies": [
-      {
-        "name": "Pharmacy name",
-        "location": "Location",
-        "contact": "Contact info",
-        "inStock": true,
-        "price": 75
-      }
-    ]
-  },
-  "warnings": {
-    "blackBox": ["black box warnings"],
-    "important": ["important warnings"],
-    "general": ["general precautions"]
-  },
-  "monitoring": {
-    "parameters": ["what to monitor"],
-    "frequency": "how often to monitor",
-    "duration": "how long to monitor"
-  }
-}
-
-Important guidelines:
-1. Provide accurate information based on standard pharmaceutical references
-2. Include pricing in Nepali Rupees (NPR)
-3. Consider local availability in Nepal
-4. If language is 'ne' or 'hi', provide translations for key terms
-5. Always emphasize consulting healthcare professionals
-6. Include culturally appropriate alternatives
-7. Be conservative with recommendations
-
-Respond only with valid JSON.
-`
-
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const text = response.text()
-
-    // Parse JSON response
-    let medicineInfo
-    try {
-      medicineInfo = JSON.parse(text)
-    } catch (parseError) {
-      logger.error(`Failed to parse Gemini medicine response: ${parseError.message}`)
-      // Fallback response
-      medicineInfo = {
-        medicine: {
-          name: medicineName || "Unknown Medicine",
-          genericName: "Generic name not available",
-          category: "Pharmaceutical",
-          classification: "Requires professional identification",
-        },
-        composition: [],
-        indications: {
-          primary: ["Consult healthcare provider for proper usage"],
-          secondary: [],
-          offLabel: [],
-        },
-        dosage: {
-          adults: {
-            standard: "As prescribed by healthcare provider",
-            frequency: "As directed",
-          },
-        },
-        warnings: {
-          important: ["Always consult a healthcare provider before using any medication"],
-          general: ["Do not use without proper medical guidance"],
-        },
-      }
-    }
-
-    return medicineInfo
-  } catch (error) {
-    logger.error(`Gemini medicine analysis error: ${error.message}`)
-    throw new Error("Failed to analyze medicine using AI")
-  }
-}
+// Export the functions
+module.exports = {
+  analyzeSymptoms,
+  getMedicineImage,
+  getRemedyImage
+};
