@@ -120,12 +120,13 @@ const ContactUs = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-300">📂 Category</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-300 bg-black-800">📂 Category</label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="glow-input w-full bg-gray-800"
+                    // className="glow-input w-full bg-black-800"  
+                   className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                   >
                     <option value="general">🔍 General Inquiry</option>
                     <option value="technical">🔧 Technical Support</option>

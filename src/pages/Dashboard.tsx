@@ -10,7 +10,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const Dashboard: React.FC = () => {
   useTranslation()
-  const { user } = useAuth()
+  const { currentUser } = useAuth() || {}
   const [stats, setStats] = useState({
     totalChecks: 0,
     todayChecks: 0,
@@ -103,23 +103,23 @@ const Dashboard: React.FC = () => {
         {/* Welcome Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
-            <img src="/g5.png" alt="Nepal Flag" className="w-12 h-12 rounded-full animate-pulse-glow" />
+            <img src="/public/logo6.png" alt=" Logo of medicare nepal" className="w-12 h-12 rounded-full animate-pulse-glow" />
             <div>
-              <h1 className="text-3xl font-bold neon-text">Welcome back, {user?.name}! 👋</h1>
+              <h1 className="text-3xl font-bold neon-text">Welcome back, {currentUser?.displayName || 'User'}! 👋</h1>
               <p className="text-gray-400">Here's your health dashboard overview</p>
             </div>
           </div>
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 max-w-7xl mx-auto">
           {dashboardCards.map((card, index) => (
             <motion.div
               key={card.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-300"
+              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 min-h-[120px] flex flex-col justify-between"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 ${card.bgColor} rounded-lg flex items-center justify-center`}>
@@ -252,32 +252,41 @@ const Dashboard: React.FC = () => {
         >
           <h3 className="text-xl font-semibold mb-6">Quick Actions</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <a
               href="/symptom-analyzer"
-              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group"
+              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20 group min-h-[140px] flex flex-col justify-center"
             >
-              <Activity className="w-8 h-8 text-red-400 mb-4 group-hover:animate-pulse" />
-              <h4 className="font-semibold mb-2">Symptom Check</h4>
-              <p className="text-gray-400 text-sm">Analyze your symptoms instantly</p>
+              <Activity className="w-8 h-8 text-red-400 mb-4 group-hover:animate-pulse group-hover:text-red-300 transition-all duration-300" />
+              <h4 className="font-semibold mb-2 group-hover:text-white transition-colors duration-300">Symptom Check</h4>
+              <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">Analyze your symptoms instantly</p>
             </a>
 
             <a
               href="/image-analyzer"
-              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group"
+              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 group min-h-[140px] flex flex-col justify-center"
             >
-              <Camera className="w-8 h-8 text-green-400 mb-4 group-hover:animate-pulse" />
-              <h4 className="font-semibold mb-2">Medicine Scanner</h4>
-              <p className="text-gray-400 text-sm">Scan medicine for details</p>
+              <Camera className="w-8 h-8 text-green-400 mb-4 group-hover:animate-pulse group-hover:text-green-300 transition-all duration-300" />
+              <h4 className="font-semibold mb-2 group-hover:text-white transition-colors duration-300">Medicine Scanner</h4>
+              <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">Scan medicine for details</p>
             </a>
 
             <a
               href="/hospitals"
-              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group"
+              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 group min-h-[140px] flex flex-col justify-center"
             >
-              <MapPin className="w-8 h-8 text-blue-400 mb-4 group-hover:animate-pulse" />
-              <h4 className="font-semibold mb-2">Find Hospitals</h4>
-              <p className="text-gray-400 text-sm">Locate nearby healthcare</p>
+              <MapPin className="w-8 h-8 text-blue-400 mb-4 group-hover:animate-pulse group-hover:text-blue-300 transition-all duration-300" />
+              <h4 className="font-semibold mb-2 group-hover:text-white transition-colors duration-300">Find Hospitals</h4>
+              <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">Locate nearby healthcare</p>
+            </a>
+
+            <a
+              href="/disease-info"
+              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20 group min-h-[140px] flex flex-col justify-center"
+            >
+              <Heart className="w-8 h-8 text-red-400 mb-4 group-hover:animate-pulse group-hover:text-red-300 transition-all duration-300" />
+              <h4 className="font-semibold mb-2 group-hover:text-white transition-colors duration-300">Disease Information</h4>
+              <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">Learn about diseases & prevention</p>
             </a>
           </div>
         </motion.div>

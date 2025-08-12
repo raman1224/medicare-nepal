@@ -1,44 +1,73 @@
-import jwt from "jsonwebtoken"
-import User from "../models/User.js"
+import admin from "firebase-admin"
 import { logger } from "../utils/logger.js"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+// Initialize Firebase Admin SDK here
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  })
+}
+
+// ...rest of your auth middleware code below...
+
 
 export const auth = async (req, res, next) => {
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "") || req.header("x-auth-token")
+    const authHeader = req.headers.authorization
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "No token provided, authorization denied",
+        message: "No token provided or invalid format",
       })
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      const user = await User.findById(decoded.id).select("-password")
+    const token = authHeader.split(" ")[1]
 
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "Token is not valid",
-        })
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token)
+
+      req.user = {
+        uid: decodedToken.uid,
+        email: decodedToken.email,
+        name: decodedToken.name || decodedToken.email,
       }
 
-      req.user = user
       next()
-    } catch (jwtError) {
+    } catch (tokenError) {
+      logger.error("Token verification failed:", tokenError)
       return res.status(401).json({
         success: false,
-        message: "Token is not valid",
+        message: "Invalid or expired token",
       })
     }
   } catch (error) {
-    logger.error(`Auth middleware error: ${error.message}`)
-    res.status(500).json({
+    logger.error("Auth middleware error:", error)
+    return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Authentication error",
     })
   }
+}
+
+export const devAuth = (req, res, next) => {
+  if (process.env.NODE_ENV === "development" && process.env.SKIP_AUTH === "true") {
+    req.user = {
+      uid: "dev-user-123",
+      email: "dev@medicare-nepal.com",
+      name: "Development User",
+    }
+    return next()
+  }
+
+  return auth(req, res, next)
 }
 
 export const adminAuth = async (req, res, next) => {

@@ -1,3 +1,4 @@
+// app.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -15,6 +16,8 @@ import Auth from "./pages/Auth"
 import Dashboard from "./pages/Dashboard"
 import SymptomAnalyzer from "./pages/SymptomAnalyzer"
 import ImageAnalyzer from "./pages/ImageAnalyzer"
+import MedicineFinder from "./components/MedicineFinder"
+import DiseaseInfo from "./pages/DiseaseInfo"
 import Hospitals from "./pages/Hospitals"
 import ContactUs from "./pages/ContactUs"
 import PrivacyPolicy from "./pages/PrivacyPolicy"
@@ -47,7 +50,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isAppReady, setIsAppReady] = useState(false)
-  const { user } = useAuth()
+  const { currentUser } = useAuth()
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -95,8 +98,8 @@ function AppContent() {
 
         socketConnection.on("connect", () => {
           console.log("Connected to server")
-          if (user) {
-            socketConnection.emit("join", `user_${user.id}`)
+          if (currentUser) {
+            socketConnection.emit("join", `user_${currentUser.uid}`)
           }
         })
 
@@ -133,7 +136,7 @@ function AppContent() {
         cleanup()
       }
     }
-  }, [user])
+  }, [currentUser])
 
   const handleWelcomeComplete = () => {
     setIsLoading(true)
@@ -167,14 +170,17 @@ function AppContent() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/auth" />} />
+                  <Route path="/dashboard" element={currentUser ? <Dashboard /> : <Navigate to="/auth" />} />
                   <Route path="/symptom-analyzer" element={<SymptomAnalyzer />} />
                   <Route path="/scanner" element={<ImageAnalyzer />} />
                   <Route path="/image-analyzer" element={<Navigate to="/scanner" />} />
+                  <Route path="/medicine-finder" element={<MedicineFinder />} />
                   <Route path="/hospitals" element={<Hospitals />} />
                   <Route path="/contact" element={<ContactUs />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/disease-info" element={<DiseaseInfo />} />
+                  <Route path="/disease-info/:id" element={<DiseaseInfo />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </AnimatePresence>

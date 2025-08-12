@@ -1,0 +1,250 @@
+{
+  "nav": {
+    "home": {
+      "en": "Home",
+      "ne": "गृह",
+      "hi": "होम"
+    },
+    "symptomAnalyzer": {
+      "en": "Symptom Analyzer",
+      "ne": "लक्षण विश्लेषक",
+      "hi": "लक्षण विश्लेषक"
+    },
+    "enhancedSymptomAnalyzer": {
+      "en": "Enhanced Symptom Analyzer",
+      "ne": "उन्नत लक्षण विश्लेषक",
+      "hi": "उन्नत लक्षण विश्लेषक"
+    },
+    "imageAnalyzer": {
+      "en": "Image Analyzer",
+      "ne": "छवि विश्लेषक",
+      "hi": "छवि विश्लेषक"
+    },
+    "diseaseInfo": {
+      "en": "Disease Info",
+      "ne": "रोग जानकारी",
+      "hi": "रोग जानकारी"
+    },
+    "hospitals": {
+      "en": "Hospitals",
+      "ne": "अस्पतालहरू",
+      "hi": "अस्पताल"
+    },
+    "contact": {
+      "en": "Contact",
+      "ne": "सम्पर्क",
+      "hi": "संपर्क"
+    }
+  },
+  "common": {
+    "analyze": {
+      "en": "Analyze",
+      "ne": "विश्लेषण गर्नुहोस्",
+      "hi": "विश्लेषण करें"
+    },
+    "loading": {
+      "en": "Loading...",
+      "ne": "लोड हुँदैछ...",
+      "hi": "लोड हो रहा है..."
+    },
+    "error": {
+      "en": "Error",
+      "ne": "त्रुटि",
+      "hi": "त्रुटि"
+    },
+    "success": {
+      "en": "Success",
+      "ne": "सफलता",
+      "hi": "सफलता"
+    },
+    "cancel": {
+      "en": "Cancel",
+      "ne": "रद्द गर्नुहोस्",
+      "hi": "रद्द करें"
+    },
+    "export": {
+      "en": "Export to PDF",
+      "ne": "PDF मा निर्यात गर्नुहोस्",
+      "hi": "PDF में निर्यात करें"
+    },
+    "download": {
+      "en": "Download",
+      "ne": "डाउनलोड गर्नुहोस्",
+      "hi": "डाउनलोड करें"
+    },
+    "retry": {
+      "en": "Retry",
+      "ne": "पुनः प्रयास गर्नुहोस्",
+      "hi": "पुनः प्रयास करें"
+    }
+  },
+  "symptomAnalyzer": {
+    "title": {
+      "en": "AI Symptom Analyzer",
+      "ne": "AI लक्षण विश्लेषक",
+      "hi": "AI लक्षण विश्लेषक"
+    },
+    "description": {
+      "en": "Describe your symptoms and get AI-powered health insights",
+      "ne": "आफ्ना लक्षणहरू वर्णन गर्नुहोस् र AI-शक्ति प्राप्त स्वास्थ्य अन्तर्दृष्टि प्राप्त गर्नुहोस्",
+      "hi": "अपने लक्षणों का वर्णन करें और AI-संचालित स्वास्थ्य अंतर्दृष्टि प्राप्त करें"
+    },
+    "placeholder": {
+      "en": "Describe your symptoms here...",
+      "ne": "यहाँ आफ्ना लक्षणहरू वर्णन गर्नुहोस्...",
+      "hi": "यहाँ अपने लक्षणों का वर्णन करें..."
+    },
+    "voiceInput": {
+      "en": "Voice Input",
+      "ne": "आवाज इनपुट",
+      "hi": "आवाज इनपुट"
+    },
+    "startRecording": {
+      "en": "Start Recording",
+      "ne": "रेकर्डिङ सुरु गर्नुहोस्",
+      "hi": "रेकॉर्डिंग शुरू करें"
+    },
+    "stopRecording": {
+      "en": "Stop Recording",
+      "ne": "रेकर्डिङ रोक्नुहोस्",
+      "hi": "रेकॉर्डिंग रोकें"
+    },
+    "analysisFailed": {
+      "en": "Analysis failed. Using local suggestions...",
+      "ne": "विश्लेषण असफल। स्थानीय सुझावहरू प्रयोग गर्दै...",
+      "hi": "विश्लेषण विफल। स्थानीय सुझावों का उपयोग कर रहे हैं..."
+    },
+    "recommendations": {
+      "en": "Recommendations",
+      "ne": "सिफारिशहरू",
+      "hi": "सिफारिशें"
+    },
+    "precautions": {
+      "en": "Precautions",
+      "ne": "सावधानीहरू",
+      "hi": "सावधानियां"
+    },
+    "consultDoctor": {
+      "en": "Consult a doctor if symptoms persist",
+      "ne": "लक्षणहरू बनेमा डाक्टरसँग सल्लाह गर्नुहोस्",
+      "hi": "लक्षण बने रहने पर डॉक्टर से सलाह लें"
+    }
+  },
+  "diseaseInfo": {
+    "title": {
+      "en": "Disease Information & Prevention",
+      "ne": "रोग जानकारी र रोकथाम",
+      "hi": "रोग जानकारी और रोकथाम"
+    },
+    "description": {
+      "en": "Learn about common diseases, their symptoms, prevention, and treatment",
+      "ne": "सामान्य रोगहरू, तिनीहरूका लक्षणहरू, रोकथाम र उपचारको बारेमा जान्नुहोस्",
+      "hi": "सामान्य रोगों, उनके लक्षणों, रोकथाम और उपचार के बारे में जानें"
+    },
+    "categories": {
+      "en": "Disease Categories",
+      "ne": "रोग श्रेणीहरू",
+      "hi": "रोग श्रेणियां"
+    },
+    "symptoms": {
+      "en": "Symptoms",
+      "ne": "लक्षणहरू",
+      "hi": "लक्षण"
+    },
+    "prevention": {
+      "en": "Prevention",
+      "ne": "रोकथाम",
+      "hi": "रोकथाम"
+    },
+    "treatment": {
+      "en": "Treatment",
+      "ne": "उपचार",
+      "hi": "उपचार"
+    },
+    "foodRecommendations": {
+      "en": "Food Recommendations",
+      "ne": "खाना सिफारिशहरू",
+      "hi": "भोजन सिफारिशें"
+    },
+    "whatToEat": {
+      "en": "What to Eat",
+      "ne": "के खाने",
+      "hi": "क्या खाएं"
+    },
+    "whatToAvoid": {
+      "en": "What to Avoid",
+      "ne": "के बच्ने",
+      "hi": "क्या न खाएं"
+    },
+    "howToStaySafe": {
+      "en": "How to Stay Safe",
+      "ne": "कसरी सुरक्षित रहने",
+      "hi": "कैसे सुरक्षित रहें"
+    },
+    "whatToDo": {
+      "en": "What to Do",
+      "ne": "के गर्ने",
+      "hi": "क्या करें"
+    }
+  },
+  "footer": {
+    "popularDiseases": {
+      "en": "Popular Diseases & Prevention",
+      "ne": "लोकप्रिय रोगहरू र रोकथाम",
+      "hi": "लोकप्रिय रोग और रोकथाम"
+    },
+    "about": {
+      "en": "About",
+      "ne": "बारेमा",
+      "hi": "के बारे में"
+    },
+    "services": {
+      "en": "Services",
+      "ne": "सेवाहरू",
+      "hi": "सेवाएं"
+    },
+    "contact": {
+      "en": "Contact",
+      "ne": "सम्पर्क",
+      "hi": "संपर्क"
+    },
+    "privacy": {
+      "en": "Privacy Policy",
+      "ne": "गोपनीयता नीति",
+      "hi": "गोपनीयता नीति"
+    },
+    "terms": {
+      "en": "Terms of Service",
+      "ne": "सेवा सर्तहरू",
+      "hi": "सेवा की शर्तें"
+    },
+    "poweredBy": {
+      "en": "Powered by DANGOL AI",
+      "ne": "DANGOL AI द्वारा संचालित",
+      "hi": "DANGOL AI द्वारा संचालित"
+    }
+  },
+  "pdf": {
+    "title": {
+      "en": "Medicare Nepal - Disease Report",
+      "ne": "मेडिकेयर नेपाल - रोग रिपोर्ट",
+      "hi": "मेडिकेयर नेपाल - रोग रिपोर्ट"
+    },
+    "generatedOn": {
+      "en": "Generated on",
+      "ne": "मा उत्पन्न",
+      "hi": "पर उत्पन्न"
+    },
+    "disclaimer": {
+      "en": "This report is for informational purposes only and should not replace professional medical advice.",
+      "ne": "यो रिपोर्ट केवल जानकारीको लागि हो र व्यावसायिक चिकित्सकीय सल्लाहको सट्टा नहुनुपर्छ।",
+      "hi": "यह रिपोर्ट केवल सूचनात्मक उद्देश्यों के लिए है और पेशेवर चिकित्सकीय सलाह की जगह नहीं ले सकती।"
+    }
+  },
+  "language": {
+    "en": "English",
+    "ne": "नेपाली",
+    "hi": "हिंदी"
+  }
+}
+

@@ -27,7 +27,7 @@ const WelcomePrompt: React.FC<WelcomePromptProps> = ({ onComplete, isLoading }) 
           className="space-y-4"
         >
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <img src="/g5.png" alt="Nepal Flag" className="w-16 h-16 rounded-full animate-pulse-glow" />
+            <img src="/logo6.png" alt="Nepal Flag" className="w-16 h-16 rounded-full animate-pulse-glow" />
             <Heart className="w-8 h-8 text-red-500 animate-pulse" />
           </div>
 

@@ -1,118 +1,480 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { 
+  auth, 
+  googleProvider, 
+  githubProvider,
+  db
+} from '../firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  UserCredential,
+  User,
+  sendPasswordResetEmail,
+  updateProfile,
+  AuthError,
+  fetchSignInMethodsForEmail
+} from 'firebase/auth';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs
+} from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: "patient" | "doctor" | "admin"
+// Define user data structure
+interface UserData {
+  uid: string;
+  name: string;
+  email: string;
+  photoURL?: string;
+  createdAt: Date;
+  role: string;
+  lastLogin?: Date;
+  phone?: string;
 }
 
+// Context interface
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string) => Promise<boolean>
-  logout: () => void
-  loading: boolean
+  currentUser: User | null;
+  userData: UserData | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  loading: boolean;
+  updateUserProfile: (updates: { displayName?: string; photoURL?: string }) => Promise<void>;
+  isEmailRegistered: (email: string) => Promise<boolean>;
+  refreshUserData: () => Promise<void>;
+  authError: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+// Create context
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+// Hook to use auth context
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }
 
+// Provider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-// export const useAuth = () => {
-//   const context = useContext(AuthContext)
-//   if (context === undefined) {
-//     throw new Error("useAuth must be used within an AuthProvider")
-//   }
-//   return context
-// }
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const router = useRouter();
 
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
+  // Handle auth state changes
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-    setLoading(false)
-  }, [])
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Mock authentication - in real app, this would be an API call
-    if (email && password) {
-      const mockUser: User = {
-        id: "1",
-        name: email.split("@")[0],
-        email,
-        role: "patient",
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      
+      if (user) {
+        try {
+          // Fetch user data from Firestore
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          
+          if (userDoc.exists()) {
+            const data = userDoc.data() as UserData;
+            setUserData(data);
+            
+            // Update last login
+            await updateDoc(doc(db, "users", user.uid), {
+              lastLogin: serverTimestamp()
+            });
+          } else {
+            // Create user document if it doesn't exist
+            const newUserData: UserData = {
+              uid: user.uid,
+              name: user.displayName || "User",
+              email: user.email || "",
+              photoURL: user.photoURL || undefined,
+              createdAt: new Date(),
+              role: "user"
+            };
+            
+            await setDoc(doc(db, "users", user.uid), newUserData);
+            setUserData(newUserData);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setAuthError("Failed to load user data");
+        }
+      } else {
+        setUserData(null);
       }
+      
+      setLoading(false);
+      setAuthError(null);
+    });
+    
+    return unsubscribe;
+  }, []);
 
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      setLoading(false)
-      return true
+  // Check if email is already registered
+  const isEmailRegistered = useCallback(async (email: string): Promise<boolean> => {
+    try {
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      return methods.length > 0;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
     }
+  }, []);
 
-    setLoading(false)
-    return false
-  }
+  // Login with email/password
+  const login = useCallback(async (email: string, password: string) => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      // Check if email exists
+      const emailExists = await isEmailRegistered(email);
+      if (!emailExists) {
+        throw new Error("Email not registered. Please sign up.");
+      }
+      
+      // Attempt login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Update last login in Firestore
+      if (userCredential.user) {
+        await updateDoc(doc(db, "users", userCredential.user.uid), {
+          lastLogin: serverTimestamp()
+        });
+      }
+      
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Login error:", error);
+      
+      let errorMessage = "Failed to login. Please try again.";
+      if (error instanceof Error) {
+        switch ((error as AuthError).code) {
+          case "auth/user-not-found":
+            errorMessage = "User not found. Please sign up.";
+            break;
+          case "auth/wrong-password":
+            errorMessage = "Incorrect password. Please try again.";
+            break;
+          case "auth/too-many-requests":
+            errorMessage = "Too many attempts. Account temporarily locked.";
+            break;
+          case "auth/user-disabled":
+            errorMessage = "Account disabled. Contact support.";
+            break;
+          default:
+            errorMessage = error.message || "Authentication failed.";
+        }
+      }
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [isEmailRegistered, router]);
 
-  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
-    setLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Mock registration
-    if (name && email && password) {
-      const mockUser: User = {
-        id: Date.now().toString(),
+  // Signup with email/password
+  const signup = useCallback(async (email: string, password: string, name: string) => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      // Check if email is already registered
+      const emailExists = await isEmailRegistered(email);
+      if (emailExists) {
+        throw new Error("Email already registered. Please login.");
+      }
+      
+      // Create user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update profile with name
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName: name });
+      }
+      
+      // Create user document in Firestore
+      const userDocData: UserData = {
+        uid: userCredential.user.uid,
         name,
         email,
-        role: "patient",
+        createdAt: new Date(),
+        role: "user"
+      };
+      
+      await setDoc(doc(db, "users", userCredential.user.uid), userDocData);
+      setUserData(userDocData);
+      
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Signup error:", error);
+      
+      let errorMessage = "Failed to sign up. Please try again.";
+      if (error instanceof Error) {
+        switch ((error as AuthError).code) {
+          case "auth/email-already-in-use":
+            errorMessage = "Email already in use. Please login.";
+            break;
+          case "auth/weak-password":
+            errorMessage = "Password should be at least 6 characters.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "Invalid email address.";
+            break;
+          default:
+            errorMessage = error.message || "Registration failed.";
+        }
       }
-
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      setLoading(false)
-      return true
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
     }
+  }, [isEmailRegistered, router]);
 
-    setLoading(false)
-    return false
-  }
+  // Google login
+  const loginWithGoogle = useCallback(async () => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Check if user is new
+      const userDocRef = doc(db, "users", result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists()) {
+        // Create user document for new user
+        const userData: UserData = {
+          uid: result.user.uid,
+          name: result.user.displayName || "User",
+          email: result.user.email || "",
+          photoURL: result.user.photoURL || undefined,
+          createdAt: new Date(),
+          role: "user"
+        };
+        
+        await setDoc(userDocRef, userData);
+        setUserData(userData);
+      } else {
+        // Update last login for existing user
+        await updateDoc(userDocRef, {
+          lastLogin: serverTimestamp()
+        });
+      }
+      
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      
+      let errorMessage = "Failed to sign in with Google.";
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("user")
-  }
+  // GitHub login
+  const loginWithGithub = useCallback(async () => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      const result = await signInWithPopup(auth, githubProvider);
+      
+      // Check if user is new
+      const userDocRef = doc(db, "users", result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists()) {
+        // Create user document for new user
+        const userData: UserData = {
+          uid: result.user.uid,
+          name: result.user.displayName || "User",
+          email: result.user.email || "",
+          photoURL: result.user.photoURL || undefined,
+          createdAt: new Date(),
+          role: "user"
+        };
+        
+        await setDoc(userDocRef, userData);
+        setUserData(userData);
+      } else {
+        // Update last login for existing user
+        await updateDoc(userDocRef, {
+          lastLogin: serverTimestamp()
+        });
+      }
+      
+      router.push('/dashboard');
+    } catch (error) {
+      console.error("GitHub sign in error:", error);
+      
+      let errorMessage = "Failed to sign in with GitHub.";
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
+  // Logout
+  const logout = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      await signOut(auth);
+      setCurrentUser(null);
+      setUserData(null);
+      router.push('/');
+    } catch (error) {
+      console.error("Logout error:", error);
+      
+      let errorMessage = "Failed to logout.";
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  // Password reset
+  const resetPassword = useCallback(async (email: string) => {
+    setLoading(true);
+    setAuthError(null);
+    
+    try {
+      // Check if email exists
+      const emailExists = await isEmailRegistered(email);
+      if (!emailExists) {
+        throw new Error("Email not registered. Please sign up.");
+      }
+      
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Password reset email sent! Check your inbox.");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      
+      let errorMessage = "Failed to send password reset email.";
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [isEmailRegistered]);
+
+  // Update user profile
+  const updateUserProfile = useCallback(async (updates: { displayName?: string; photoURL?: string }) => {
+    if (!auth.currentUser) return;
+    
+    try {
+      // Update Firebase auth profile
+      await updateProfile(auth.currentUser, updates);
+      
+      // Update Firestore document
+      if (auth.currentUser.uid) {
+        const updateData: Partial<UserData> = {};
+        if (updates.displayName) updateData.name = updates.displayName;
+        if (updates.photoURL) updateData.photoURL = updates.photoURL;
+        
+        if (Object.keys(updateData).length > 0) {
+          await updateDoc(doc(db, "users", auth.currentUser.uid), updateData);
+          
+          // Update local state
+          setUserData(prev => ({
+            ...prev!,
+            ...updateData
+          }));
+        }
+      }
+      
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("Failed to update profile.");
+    }
+  }, []);
+
+  // Refresh user data
+  const refreshUserData = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data() as UserData);
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  }, [currentUser]);
+
+  // Context value
   const value = {
-    user,
+    currentUser,
+    userData,
     login,
     signup,
+    loginWithGoogle,
+    loginWithGithub,
     logout,
+    resetPassword,
     loading,
-  }
+    updateUserProfile,
+    isEmailRegistered,
+    refreshUserData,
+    authError
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 }

@@ -1,3 +1,13 @@
+
+
+
+
+
+
+
+
+
+
 import mongoose from "mongoose"
 
 const medicineAnalysisSchema = new mongoose.Schema(

@@ -1,20 +1,20 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 interface PWAContextType {
+  isInstallable: boolean
   isInstalled: boolean
-  isOnline: boolean
-  updateAvailable: boolean
   installPrompt: any
-  updateApp: () => void
+  showInstallPrompt: () => void
+  hideInstallPrompt: () => void
 }
 
 const PWAContext = createContext<PWAContextType | undefined>(undefined)
 
 export const usePWA = () => {
   const context = useContext(PWAContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error("usePWA must be used within a PWAProvider")
   }
   return context
@@ -25,14 +25,12 @@ interface PWAProviderProps {
 }
 
 export const PWAProvider = ({ children }: PWAProviderProps) => {
+  const [isInstallable, setIsInstallable] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
-  const [updateAvailable, setUpdateAvailable] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<any>(null)
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null)
 
   useEffect(() => {
-    // Check if app is installed
+    // Check if app is already installed
     const checkInstalled = () => {
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches
       const isInWebAppiOS = (window.navigator as any).standalone === true
@@ -41,70 +39,53 @@ export const PWAProvider = ({ children }: PWAProviderProps) => {
 
     checkInstalled()
 
-    // Listen for online/offline events
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
-
-    // Listen for install prompt
+    // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
       setInstallPrompt(e)
+      setIsInstallable(true)
     }
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-
-    // Listen for app installed
+    // Listen for appinstalled event
     const handleAppInstalled = () => {
       setIsInstalled(true)
+      setIsInstallable(false)
       setInstallPrompt(null)
     }
 
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
     window.addEventListener("appinstalled", handleAppInstalled)
 
-    // Check for service worker updates
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.ready.then((reg) => {
-        setRegistration(reg)
-        
-        reg.addEventListener("updatefound", () => {
-          const newWorker = reg.installing
-          if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
-              if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                setUpdateAvailable(true)
-              }
-            })
-          }
-        })
-      })
-    }
-
     return () => {
-      window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
       window.removeEventListener("appinstalled", handleAppInstalled)
     }
   }, [])
 
-  const updateApp = () => {
-    if (registration && registration.waiting) {
-      registration.waiting.postMessage({ type: "SKIP_WAITING" })
-      window.location.reload()
+  const showInstallPrompt = async () => {
+    if (installPrompt) {
+      installPrompt.prompt()
+      const { outcome } = await installPrompt.userChoice
+      if (outcome === "accepted") {
+        setIsInstallable(false)
+        setInstallPrompt(null)
+      }
     }
+  }
+
+  const hideInstallPrompt = () => {
+    setIsInstallable(false)
+    setInstallPrompt(null)
   }
 
   return (
     <PWAContext.Provider
       value={{
+        isInstallable,
         isInstalled,
-        isOnline,
-        updateAvailable,
         installPrompt,
-        updateApp,
+        showInstallPrompt,
+        hideInstallPrompt,
       }}
     >
       {children}

@@ -1,389 +1,492 @@
-"use client"
+import React, { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useAuth } from '../context/AuthContext'
+import { toast } from 'react-toastify'
+import { 
+  FaCamera, 
+  FaPills, 
+  FaAppleAlt, 
+  FaSpinner, 
+  FaInfoCircle, 
+  FaUpload,
+  FaTimes,
+  FaCheck,
+  FaExclamationTriangle
+} from 'react-icons/fa'
 
-import type React from "react"
-import { useState, useCallback } from "react"
-import { motion } from "framer-motion"
-import { useDropzone } from "react-dropzone"
-import { Camera, Upload, X, Pill, AlertTriangle, CheckCircle, Clock, Leaf } from "lucide-react"
-import { useTranslation } from "react-i18next"
-import { toast } from "react-toastify"
-
-interface MedicineAnalysis {
+interface MedicineInfo {
   name: string
   genericName: string
   manufacturer: string
   purpose: string
-  mainIngredients: string[]
-  dosage: {
-    adults: string
-    children: string
+  dosageForm: string
+  sideEffects: string
+  precautions: string
+  storage: string
+  whenToTake: string
+  foodInteractions: string
+  alternatives: string[]
+  price: { min: number; max: number; currency: string }
+  source: string
+  detectedConfidence?: number
+  detectionSource?: string
+}
+
+interface FoodInfo {
+  name: string
+  description: string
+  healthBenefits: string
+}
+
+interface AnalysisResult {
+  success: boolean
+  message: string
+  data: {
+    medicines?: MedicineInfo[]
+    primaryMedicine?: MedicineInfo
+    foods?: FoodInfo[]
+    detectedText: string
+    confidence: number
+    totalMedicines?: number
   }
-  sideEffects: string[]
-  contraindications: string[]
-  price: {
-    min: number
-    max: number
-    currency: string
-  }
-  alternatives: {
-    medicines: Array<{
-      name: string
-      price: number
-    }>
-    naturalFoods: string[]
-  }
-  whenToAvoid: string[]
-  dailyRoutine: string[]
 }
 
 const ImageAnalyzer: React.FC = () => {
-  useTranslation()
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const { currentUser } = useAuth()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analysis, setAnalysis] = useState<MedicineAnalysis | null>(null)
+  const [analysisType, setAnalysisType] = useState<'medicine' | 'food'>('medicine')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0]
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setUploadedImage(reader.result as string)
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB')
+        return
       }
-      reader.readAsDataURL(file)
-    }
-  }, [])
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file')
+        return
+      }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
-    },
-    multiple: false,
-  })
+      setSelectedFile(file)
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+      setResult(null)
+      setUploadProgress(0)
+    }
+  }
 
   const handleAnalyze = async () => {
-    if (!uploadedImage) {
-      toast.error("Please upload an image first")
+    if (!selectedFile) {
+      toast.error('Please select an image first')
+      return
+    }
+
+    if (!currentUser) {
+      toast.error('Please login to use this feature')
       return
     }
 
     setIsAnalyzing(true)
+    setResult(null)
+    setUploadProgress(0)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 4000))
+    try {
+      const formData = new FormData()
+      formData.append('image', selectedFile)
 
-    // Mock analysis result
-    const mockAnalysis: MedicineAnalysis = {
-      name: "Paracetamol 500mg",
-      genericName: "Acetaminophen",
-      manufacturer: "Nepal Pharmaceuticals Ltd.",
-      purpose: "Pain relief and fever reduction",
-      mainIngredients: ["Paracetamol 500mg", "Microcrystalline Cellulose", "Starch", "Magnesium Stearate"],
-      dosage: {
-        adults: "1-2 tablets every 4-6 hours (max 8 tablets/day)",
-        children: "Consult doctor for appropriate dosage",
-      },
-      sideEffects: [
-        "Nausea (rare)",
-        "Skin rash (allergic reaction)",
-        "Liver damage (with overdose)",
-        "Stomach upset (uncommon)",
-      ],
-      contraindications: ["Severe liver disease", "Alcohol dependency", "Allergy to paracetamol", "G6PD deficiency"],
-      price: {
-        min: 15,
-        max: 25,
-        currency: "NPR",
-      },
-      alternatives: {
-        medicines: [
-          { name: "Ibuprofen 400mg", price: 20 },
-          { name: "Aspirin 325mg", price: 12 },
-          { name: "Diclofenac 50mg", price: 18 },
-        ],
-        naturalFoods: [
-          "Ginger tea for pain relief",
-          "Turmeric milk for inflammation",
-          "Honey and lemon for throat pain",
-          "Cold compress for headaches",
-        ],
-      },
-      whenToAvoid: [
-        "During alcohol consumption",
-        "With other paracetamol-containing medicines",
-        "If you have liver problems",
-        "During pregnancy (consult doctor first)",
-      ],
-      dailyRoutine: [
-        "Take with or after meals to reduce stomach irritation",
-        "Drink plenty of water",
-        "Avoid alcohol completely",
-        "Monitor for any unusual symptoms",
-        "Do not exceed recommended dosage",
-        "Store in cool, dry place",
-      ],
+      const endpoint = analysisType === 'medicine' 
+        ? '/api/medicare/analyze-image' 
+        : '/api/medicare/analyze-food'
+      
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return prev
+          }
+          return prev + 10
+        })
+      }, 200)
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${await currentUser.getIdToken()}`
+        }
+      })
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+
+      const data = await response.json()
+
+      if (data.success) {
+        setResult(data)
+        toast.success(data.message)
+      } else {
+        toast.error(data.message || 'Analysis failed')
+      }
+    } catch (error) {
+      console.error('Analysis error:', error)
+      toast.error('Failed to analyze image. Please try again.')
+    } finally {
+      setIsAnalyzing(false)
+      setUploadProgress(0)
     }
-
-    setAnalysis(mockAnalysis)
-    setIsAnalyzing(false)
-    toast.success("Medicine analysis completed!")
   }
 
-  const removeImage = () => {
-    setUploadedImage(null)
-    setAnalysis(null)
+  const handleClear = () => {
+    setSelectedFile(null)
+    setPreviewUrl(null)
+    setResult(null)
+    setUploadProgress(0)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const formatPrice = (price: { min: number; max: number; currency: string }) => {
+    return `${price.currency} ${price.min} - ${price.max}`
+  }
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return 'text-green-500'
+    if (confidence >= 0.6) return 'text-yellow-500'
+    return 'text-red-500'
   }
 
   return (
-    <div className="min-h-screen pt-16 pb-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Camera className="w-8 h-8 text-green-400 animate-pulse" />
-            <h1 className="text-3xl font-bold neon-text">Medicine Scanner</h1>
-          </div>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Upload or drag & drop a photo of your medicine to get detailed analysis including ingredients, side effects,
-            alternatives, and pricing information.
-          </p>
-        </motion.div>
-
-        {/* Upload Section */}
+    <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      <div className="max-w-6xl mx-auto p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass p-8 rounded-xl mb-8"
+          className="glass rounded-2xl border border-white/10 shadow-3d p-8"
         >
-          {!uploadedImage ? (
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${
-                isDragActive
-                  ? "border-blue-400 bg-blue-400/10"
-                  : "border-gray-600 hover:border-gray-500 hover:bg-white/5"
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold neon-text mb-4">
+              AI-Powered Medicine & Food Analyzer
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Upload images of medicines or food to get detailed health insights
+            </p>
+          </div>
+
+          {/* Analysis Type Selector */}
+          <div className="flex justify-center space-x-4 mb-8">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setAnalysisType('medicine')}
+              className={`flex items-center space-x-3 px-6 py-3 rounded-lg transition-all duration-300 ${
+                analysisType === 'medicine'
+                  ? 'bg-blue-500 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              <input {...getInputProps()} />
-              <div className="space-y-4">
-                <div className="w-16 h-16 mx-auto bg-green-400/10 rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-green-400" />
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {isDragActive ? "Drop your image here" : "Upload Medicine Image"}
-                  </h3>
-                  <p className="text-gray-400 mb-4">Drag & drop or click to select an image of your medicine</p>
-                  <p className="text-sm text-gray-500">Supports: JPG, PNG, WEBP (Max 10MB)</p>
-                </div>
-
-                <button className="glow-button px-6 py-3">Choose Image</button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="relative">
-                <img
-                  src={uploadedImage || "/placeholder.svg"}
-                  alt="Uploaded medicine"
-                  className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-                />
-                <button
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                >
-                  <X className="w-4 h-4 text-white" />
-                </button>
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="glow-button px-8 py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span className="loading-dots">Analyzing medicine</span>
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-5 h-5" />
-                      <span>Analyze Medicine</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Info Section */}
-          <div className="mt-8 p-4 bg-blue-400/10 border border-blue-400/20 rounded-lg">
-            <h4 className="font-semibold mb-2 text-blue-400">Why upload medicine images?</h4>
-            <ul className="text-sm text-gray-300 space-y-1">
-              <li>• Get accurate medicine identification</li>
-              <li>• Learn about ingredients and side effects</li>
-              <li>• Find natural alternatives and replacements</li>
-              <li>• Get current pricing information</li>
-              <li>• Receive personalized usage recommendations</li>
-            </ul>
+              <FaPills className="text-xl" />
+              <span className="font-semibold">Medicine Analysis</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setAnalysisType('food')}
+              className={`flex items-center space-x-3 px-6 py-3 rounded-lg transition-all duration-300 ${
+                analysisType === 'food'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <FaAppleAlt className="text-xl" />
+              <span className="font-semibold">Food Analysis</span>
+            </motion.button>
           </div>
+
+          {/* Instructions */}
+          <div className="text-center mb-8">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-blue-400 mb-2">
+                {analysisType === 'medicine' ? 'Medicine Analysis' : 'Food Analysis'}
+              </h3>
+              <p className="text-gray-300">
+                {analysisType === 'medicine' 
+                  ? 'Upload clear images of medicine packaging, strips, or prescriptions to get detailed information about dosage, side effects, and usage.'
+                  : 'Upload images of food items to get nutritional information and health benefits.'
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* File Upload Section */}
+          <div className="mb-8">
+            <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              {!previewUrl ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="space-y-4"
+                >
+                  <FaCamera className="mx-auto text-6xl text-gray-400" />
+                  <p className="text-gray-400 text-lg">
+                    Click to upload or drag and drop your image
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2 mx-auto"
+                  >
+                    <FaUpload />
+                    <span>Choose Image</span>
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="space-y-4"
+                >
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="mx-auto max-h-80 rounded-lg shadow-lg"
+                  />
+                  <div className="flex justify-center space-x-4">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing}
+                      className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <FaSpinner className="animate-spin" />
+                          <span>Analyzing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck />
+                          <span>Analyze Image</span>
+                        </>
+                      )}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleClear}
+                      className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                    >
+                      <FaTimes />
+                      <span>Clear</span>
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Upload Progress */}
+            {isAnalyzing && (
+              <div className="mt-4">
+                <div className="bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-center text-gray-400 mt-2">
+                  Processing image... {uploadProgress}%
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Results Section */}
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8"
+            >
+              <h3 className="text-2xl font-semibold text-white mb-6 text-center">
+                Analysis Results
+              </h3>
+
+              {/* Medicine Analysis Results */}
+              {analysisType === 'medicine' && result.data.medicines && (
+                <div className="space-y-6">
+                  {result.data.medicines.map((medicine, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-gray-800/50 rounded-lg p-6 border border-gray-700"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-xl font-semibold text-blue-400">
+                          {medicine.name}
+                        </h4>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-sm ${getConfidenceColor(medicine.detectedConfidence || 0)}`}>
+                            Confidence: {Math.round((medicine.detectedConfidence || 0) * 100)}%
+                          </span>
+                          <FaInfoCircle className="text-blue-400" />
+                        </div>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="font-medium text-gray-300">Generic Name:</span>
+                            <p className="text-gray-400">{medicine.genericName}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Manufacturer:</span>
+                            <p className="text-gray-400">{medicine.manufacturer}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Purpose:</span>
+                            <p className="text-gray-400">{medicine.purpose}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Dosage Form:</span>
+                            <p className="text-gray-400">{medicine.dosageForm}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">When to Take:</span>
+                            <p className="text-gray-400">{medicine.whenToTake}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <span className="font-medium text-gray-300">Side Effects:</span>
+                            <p className="text-gray-400">{medicine.sideEffects}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Precautions:</span>
+                            <p className="text-gray-400">{medicine.precautions}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Food Interactions:</span>
+                            <p className="text-gray-400">{medicine.foodInteractions}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-300">Storage:</span>
+                            <p className="text-gray-400">{medicine.storage}</p>
+                          </div>
+                          {medicine.price && (
+                            <div>
+                              <span className="font-medium text-gray-300">Price Range:</span>
+                              <p className="text-gray-400">{formatPrice(medicine.price)}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {medicine.alternatives && medicine.alternatives.length > 0 && (
+                        <div className="mt-4 p-4 bg-blue-900/20 rounded-lg">
+                          <span className="font-medium text-blue-400">Alternatives:</span>
+                          <p className="text-gray-300">{medicine.alternatives.join(', ')}</p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-400">
+                            Source: {medicine.source}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            Detection: {medicine.detectionSource}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Food Analysis Results */}
+              {analysisType === 'food' && result.data.foods && (
+                <div className="space-y-4">
+                  {result.data.foods.map((food, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-green-900/20 border border-green-500/30 rounded-lg p-6"
+                    >
+                      <h4 className="text-xl font-semibold text-green-400 mb-2">
+                        {food.name}
+                      </h4>
+                      <p className="text-gray-300 mb-3">{food.description}</p>
+                      <div className="bg-green-800/20 rounded-lg p-4">
+                        <span className="font-medium text-green-400">Health Benefits:</span>
+                        <p className="text-gray-300 mt-1">{food.healthBenefits}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Detected Text */}
+              {result.data.detectedText && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-6 bg-gray-800/50 rounded-lg p-4"
+                >
+                  <h5 className="font-medium text-gray-300 mb-2">Detected Text:</h5>
+                  <p className="text-sm text-gray-400 bg-gray-900 p-3 rounded border">
+                    {result.data.detectedText}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Confidence Score */}
+              <div className="mt-4 text-center">
+                <span className={`text-sm ${getConfidenceColor(result.data.confidence)}`}>
+                  Overall Confidence: {Math.round(result.data.confidence * 100)}%
+                </span>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <FaExclamationTriangle className="text-yellow-400" />
+                  <span className="font-medium text-yellow-400">Important Disclaimer</span>
+                </div>
+                <p className="text-sm text-gray-300">
+                  This analysis is for informational purposes only and should not replace professional medical advice. 
+                  Always consult with a healthcare provider for proper diagnosis and treatment.
+                </p>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
-
-        {/* Analysis Results */}
-        {analysis && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Medicine Overview */}
-            <div className="glass p-6 rounded-xl">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-2xl font-bold mb-1">{analysis.name}</h3>
-                  <p className="text-gray-400">Generic: {analysis.genericName}</p>
-                  <p className="text-sm text-gray-500">by {analysis.manufacturer}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-400">
-                    {analysis.price.currency} {analysis.price.min}-{analysis.price.max}
-                  </div>
-                  <p className="text-sm text-gray-400">Price Range</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-blue-400/10 border border-blue-400/20 rounded-lg">
-                <h4 className="font-semibold mb-2 text-blue-400">Purpose</h4>
-                <p className="text-gray-300">{analysis.purpose}</p>
-              </div>
-            </div>
-
-            {/* Ingredients */}
-            <div className="glass p-6 rounded-xl">
-              <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2">
-                <Pill className="w-5 h-5 text-purple-400" />
-                <span>Main Ingredients</span>
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {analysis.mainIngredients.map((ingredient, index) => (
-                  <div key={index} className="flex items-center space-x-2 p-3 glass rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-                    <span className="text-gray-300">{ingredient}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Dosage */}
-            <div className="glass p-6 rounded-xl">
-              <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <span>Recommended Dosage</span>
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-green-400/10 border border-green-400/20 rounded-lg">
-                  <h5 className="font-semibold text-green-400 mb-2">Adults</h5>
-                  <p className="text-gray-300">{analysis.dosage.adults}</p>
-                </div>
-                <div className="p-4 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
-                  <h5 className="font-semibold text-yellow-400 mb-2">Children</h5>
-                  <p className="text-gray-300">{analysis.dosage.children}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Side Effects & Contraindications */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="glass p-6 rounded-xl">
-                <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2 text-yellow-400">
-                  <AlertTriangle className="w-5 h-5" />
-                  <span>Side Effects</span>
-                </h4>
-
-                <ul className="space-y-2">
-                  {analysis.sideEffects.map((effect, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-300">{effect}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="glass p-6 rounded-xl">
-                <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2 text-red-400">
-                  <X className="w-5 h-5" />
-                  <span>When to Avoid</span>
-                </h4>
-
-                <ul className="space-y-2">
-                  {analysis.whenToAvoid.map((condition, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <X className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-300">{condition}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Alternatives */}
-            <div className="glass p-6 rounded-xl">
-              <h4 className="text-xl font-semibold mb-6 flex items-center space-x-2">
-                <Leaf className="w-5 h-5 text-green-400" />
-                <span>Alternatives & Natural Replacements</span>
-              </h4>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Medicine Alternatives */}
-                <div>
-                  <h5 className="font-semibold mb-3 text-blue-400">Medicine Alternatives</h5>
-                  <div className="space-y-2">
-                    {analysis.alternatives.medicines.map((medicine, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 glass rounded-lg">
-                        <span className="text-gray-300">{medicine.name}</span>
-                        <span className="text-green-400 font-semibold">NPR {medicine.price}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Natural Alternatives */}
-                <div>
-                  <h5 className="font-semibold mb-3 text-green-400">Natural Foods</h5>
-                  <div className="space-y-2">
-                    {analysis.alternatives.naturalFoods.map((food, index) => (
-                      <div key={index} className="flex items-start space-x-2 p-3 glass rounded-lg">
-                        <Leaf className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-300">{food}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Daily Routine */}
-            <div className="glass p-6 rounded-xl">
-              <h4 className="text-xl font-semibold mb-4 flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>Daily Routine & Tips</span>
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {analysis.dailyRoutine.map((tip, index) => (
-                  <div key={index} className="flex items-start space-x-2 p-3 glass rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-300">{tip}</span>
-                    <span className="text-gray-300">{tip}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
       </div>
     </div>
   )

@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion } from "framer-motion"
@@ -14,14 +13,15 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const { t } = useTranslation()
-  const { user, logout } = useAuth()
+  const { currentUser, logout } = useAuth() // Use currentUser instead of user
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
 
   const navItems = [
     { name: t("nav.home"), path: "/" },
     { name: t("nav.symptomAnalyzer"), path: "/symptom-analyzer" },
-    { name: t("nav.imageAnalyzer"), path: "/image-analyzer" },
+    { name: "Medicine Finder", path: "/medicine-finder" },
+    { name: "Disease Info", path: "/disease-info" },
     { name: t("nav.hospitals"), path: "/hospitals" },
   ]
 
@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src="/g5.png" alt="Medicare Nepal" className="w-10 h-10 rounded-full animate-pulse-glow" />
+            <img src="/logo6.png" alt="Medicare Nepal" className="w-10 h-10 rounded-full animate-pulse-glow" />
             <span className="text-xl font-bold neon-text">Medicare Nepal</span>
           </Link>
 
@@ -59,7 +59,8 @@ const Navbar: React.FC = () => {
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4">
             <LanguageSelector />
-
+            
+            {/* Theme toggle button */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg glass hover:bg-white/10 transition-all duration-300"
@@ -69,16 +70,18 @@ const Navbar: React.FC = () => {
               ) : (
                 <Moon className="w-5 h-5 text-blue-400" />
               )}
-            </button>
+            </button>   
 
-            {user ? (
+            {currentUser ? ( // Use currentUser here
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 p-2 rounded-lg glass hover:bg-white/10 transition-all duration-300"
                 >
                   <User className="w-5 h-5" />
-                  <span className="hidden sm:block">{user.name}</span>
+                  <span className="hidden sm:block">
+                    {currentUser.displayName || currentUser.email?.split('@')[0]}
+                  </span>
                 </button>
 
                 {showUserMenu && (
@@ -129,7 +132,6 @@ const Navbar: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-t border-white/10 mt-4 pt-4 pb-4"
           >
             {navItems.map((item) => (

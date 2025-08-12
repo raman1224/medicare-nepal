@@ -61,7 +61,7 @@ const Home: React.FC = () => {
               className="space-y-6"
             >
               <div className="flex items-center justify-center space-x-2 mb-6">
-                <img src="/g5.png" alt="Nepal Flag" className="w-16 h-16 rounded-full animate-pulse-glow" />
+                <img src="/logo6.png" alt="Nepal Flag" className="w-16 h-16 rounded-full animate-pulse-glow" />
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-100"></div>
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-200"></div>

@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
 
             <div className="glass p-6 rounded-lg">
               <Users className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">50,000+</h4>
+              <h4 className="font-semibold mb-2">5,000+</h4>
               <p className="text-sm text-gray-400">{t("footer.trustedUsers")}</p>
             </div>
 
@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <img src="/g5.png" alt="Nepal Flag" className="w-8 h-8 rounded-full" />
+              <img src="/logo6.png" alt="Medicare Nepal Logo" className="w-8 h-8 rounded-full" />
               <span className="text-xl font-bold neon-text">Medicare Nepal</span>
             </div>
             <p className="text-gray-400 text-sm">{t("footer.description")}</p>
@@ -78,6 +78,11 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
+                <a href="/disease-info" className="hover:text-white transition-colors">
+                  {t("Disease Info")}
+                </a>
+              </li>
+              <li>
                 <a href="#" className="hover:text-white transition-colors">
                   {t("footer.emergencyServices")}
                 </a>
@@ -94,7 +99,7 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="/contact" className="hover:text-white transition-colors">
                   {t("footer.contactUs")}
                 </a>
               </li>

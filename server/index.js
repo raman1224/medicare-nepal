@@ -18,7 +18,9 @@ import hospitalRoutes from "./routes/hospital.js"
 import contactRoutes from "./routes/contact.js"
 import analyticsRoutes from "./routes/analytics.js"
 import uploadRoutes from "./routes/upload.js"
+import aiAnalysisRoutes from "./routes/aiAnalysis.js"
 import userRoutes from "./routes/user.js"
+import analyzeSymptomRoutes from "./routes/analyzeSymptom.js"
 
 // Import middleware
 import { errorHandler } from "./middleware/errorHandler.js"
@@ -131,11 +133,14 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes)
 app.use("/api/symptoms", symptomRoutes)
 app.use("/api/medicines", medicineRoutes)
+app.use("/api/medicare", medicineRoutes) // Add alternative route for medicare
 app.use("/api/hospitals", hospitalRoutes)
 app.use("/api/contact", contactRoutes)
 app.use("/api/analytics", analyticsRoutes)
 app.use("/api/upload", uploadRoutes)
+app.use("/api/ai", aiAnalysisRoutes)
 app.use("/api/users", userRoutes)
+app.use("/api/analyzeSymptom", analyzeSymptomRoutes)
 
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {

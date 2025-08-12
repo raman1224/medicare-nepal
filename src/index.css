@@ -669,3 +669,76 @@ body {
     max-width: 150px;
   }
 }
+
+
+
+/* Typewriter Effect */
+@layer utilities {
+  .typewriter {
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    display: inline-block; /* Important for staying centered */
+    animation: typing 3.2s steps(25, end) forwards, fadeIn 4.2s ease-in forwards;
+  }
+
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0.5;
+      text-shadow: none;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    to {
+      opacity: 1;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6),
+                   0 0 20px rgba(0, 150, 255, 0.5);
+      color: #ffffff;
+    }
+  }
+}
+
+
+
+/* Color Variables */
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+.dark body {
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}

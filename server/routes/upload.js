@@ -2,7 +2,7 @@ import express from "express"
 import multer from "multer"
 import { auth } from "../middleware/auth.js"
 // import { uploadToCloudinary } from "../utils/cloudinary.js"
-import { uploadImage as uploadToCloudinary } from "../utils/cloudinary.js"
+import { uploadBufferToCloudinary } from "../utils/cloudinary.js"
 
 import { logger } from "../utils/logger.js"
 
@@ -40,11 +40,8 @@ router.post("/image", auth, upload.single("image"), async (req, res) => {
     const { folder = "general" } = req.body
 
     // Upload to Cloudinary
-    const imageUrl = await uploadToCloudinary(req.file.buffer, {
-      folder: `medicare-nepal/${folder}`,
-      public_id: `${Date.now()}_${req.user.id}`,
-      resource_type: "image",
-    })
+    const result = await uploadBufferToCloudinary(req.file.buffer, `medicare-nepal/${folder}`)
+    const imageUrl = result.url
 
     logger.info(`Image uploaded by user ${req.user.id}: ${imageUrl}`)
 
@@ -81,14 +78,10 @@ router.post("/multiple", auth, upload.array("images", 5), async (req, res) => {
 
     const { folder = "general" } = req.body
     const uploadPromises = req.files.map(async (file, index) => {
-      const imageUrl = await uploadToCloudinary(file.buffer, {
-        folder: `medicare-nepal/${folder}`,
-        public_id: `${Date.now()}_${req.user.id}_${index}`,
-        resource_type: "image",
-      })
+      const result = await uploadBufferToCloudinary(file.buffer, `medicare-nepal/${folder}`)
 
       return {
-        url: imageUrl,
+        url: result.url,
         originalName: file.originalname,
         size: file.size,
         mimeType: file.mimetype,

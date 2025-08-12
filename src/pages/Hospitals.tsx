@@ -238,10 +238,10 @@ const Hospitals: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search hospitals..."
+                placeholder="     Search hospitals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="glow-input w-full pl-10"
+                className="ml-1 glow-input w-full pl-10"
               />
             </div>
 
@@ -249,7 +249,9 @@ const Hospitals: React.FC = () => {
             <select
               value={selectedProvince}
               onChange={(e) => setSelectedProvince(e.target.value)}
-              className="glow-input w-full"
+              // className="glow-input w-full"
+                 className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+
             >
               <option value="all">All Provinces</option>
               {provinces.map((province) => (
@@ -263,7 +265,9 @@ const Hospitals: React.FC = () => {
             <select
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="glow-input w-full"
+              // className="glow-input w-full"
+                                 className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+
             >
               <option value="all">All Departments</option>
               {departments.map((department) => (

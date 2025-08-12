@@ -1,0 +1,3 @@
+disease,name_english,description_english,dosage_english,food_routine_english,calories,protein_g,price,image_url,name_nepali,description_nepali,dosage_nepali,food_routine_nepali
+Flu,Paracetamol,Used for fever relief,1 tablet every 6 hours after food,Avoid oily foods; eat protein-rich diet,2100,60,Rs 150,https://example.com/images/paracetamol.png,प्यारासिटामोल,ज्वरो कम गर्न प्रयोग हुन्छ,खानेकुरा पछि ६ घण्टामा १ गोली खानुहोस्,तैलीय खानाबाट टाढा रहनुहोस्; प्रोटिनयुक्त आहार खानुहोस्
+Cold,Cough Syrup,Relieves cough,10 ml thrice daily after meals,Avoid cold drinks,2000,50,Rs 200,https://example.com/images/coughsyrup.png,खोकी सिरप,खोकी कम गर्छ,खानेकुरा पछि १० मिलि खानुहोस्,चिसो पेय पदार्थबाट टाढा रहनुहोस्

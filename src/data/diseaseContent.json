@@ -1,0 +1,852 @@
+{
+  "categories": {
+    "infectious": {
+      "name": {
+        "en": "Infectious Diseases",
+        "ne": "संक्रामक रोगहरू",
+        "hi": "संक्रामक रोग"
+      },
+      "diseases": {
+        "tuberculosis": {
+          "name": {
+            "en": "Tuberculosis",
+            "ne": "क्षयरोग",
+            "hi": "क्षय रोग"
+          },
+          "symptoms": {
+            "en": ["Persistent cough", "Chest pain", "Coughing up blood", "Fatigue", "Weight loss", "Night sweats", "Fever"],
+            "ne": ["लगातार खोकी", "छाती दुखाई", "रगत मिसिएको खोकी", "थकान", "तौल घट्नु", "रातमा पसिना", "ज्वरो"],
+            "hi": ["लगातार खांसी", "छाती में दर्द", "खून की खांसी", "थकान", "वजन कम होना", "रात को पसीना", "बुखार"]
+          },
+          "prevention": {
+            "en": ["Get BCG vaccination", "Avoid close contact with TB patients", "Maintain good ventilation", "Wear masks in crowded places", "Regular health checkups"],
+            "ne": ["बीसीजी टीका लगाउनु", "क्षयरोगीहरूसँग नजिकै सम्पर्क नगर्नु", "राम्रो वायुसंचार राख्नु", "भीडभाडमा मास्क लगाउनु", "नियमित स्वास्थ्य जाँच"],
+            "hi": ["बीसीजी टीकाकरण लें", "टीबी रोगियों से दूरी बनाएं", "अच्छा वेंटिलेशन रखें", "भीड़ में मास्क पहनें", "नियमित स्वास्थ्य जांच"]
+          },
+          "treatment": {
+            "en": ["Multi-drug therapy (6-9 months)", "Directly Observed Treatment (DOT)", "Regular medication adherence", "Nutritional support", "Rest and isolation"],
+            "ne": ["बहु-औषधि चिकित्सा (६-९ महिना)", "प्रत्यक्ष निरीक्षण उपचार", "नियमित औषधि सेवन", "पोषण सहयोग", "विश्राम र अलगाव"],
+            "hi": ["मल्टी-ड्रग थेरेपी (6-9 महीने)", "सीधा निरीक्षण उपचार", "नियमित दवा सेवन", "पोषण सहयोग", "आराम और अलगाव"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["High protein foods", "Vitamin C rich fruits", "Green leafy vegetables", "Nuts and seeds", "Dairy products"],
+              "ne": ["उच्च प्रोटिन खाना", "भिटामिन सी भएका फलफूल", "हरियो पात भएका साग", "बदाम र गेडागुडी", "दुध र दुधजन्य पदार्थ"],
+              "hi": ["उच्च प्रोटीन भोजन", "विटामिन सी युक्त फल", "हरी पत्तेदार सब्जियां", "नट्स और बीज", "दूध उत्पाद"]
+            },
+            "avoid": {
+              "en": ["Alcohol", "Tobacco", "Processed foods", "Excessive caffeine"],
+              "ne": ["रक्सी", "तमाखु", "प्रशोधित खाना", "अधिक कफिन"],
+              "hi": ["शराब", "तंबाकू", "प्रोसेस्ड फूड", "अधिक कैफीन"]
+            }
+          }
+        },
+        "influenza": {
+          "name": {
+            "en": "Influenza",
+            "ne": "इन्फ्लुएन्जा",
+            "hi": "इन्फ्लुएन्जा"
+          },
+          "symptoms": {
+            "en": ["High fever", "Body aches", "Headache", "Fatigue", "Cough", "Sore throat", "Runny nose"],
+            "ne": ["उच्च ज्वरो", "शरीर दुखाई", "टाउको दुखाई", "थकान", "खोकी", "घाँटी दुखाई", "नाक बग्नु"],
+            "hi": ["तेज बुखार", "शरीर में दर्द", "सिरदर्द", "थकान", "खांसी", "गले में दर्द", "बहती नाक"]
+          },
+          "prevention": {
+            "en": ["Annual flu vaccination", "Frequent hand washing", "Avoid touching face", "Stay away from sick people", "Good hygiene practices"],
+            "ne": ["वार्षिक फ्लु टीका", "बारम्बार हात धुनु", "मुख छुनु नगर्नु", "बिरामीहरूबाट टाढा रहनु", "राम्रो स्वच्छता"],
+            "hi": ["वार्षिक फ्लू टीकाकरण", "बार-बार हाथ धोना", "चेहरा छूने से बचें", "बीमार लोगों से दूर रहें", "अच्छी स्वच्छता"]
+          },
+          "treatment": {
+            "en": ["Rest and fluids", "Over-the-counter medications", "Antiviral drugs if prescribed", "Symptom management", "Adequate sleep"],
+            "ne": ["विश्राम र तरल पदार्थ", "औषधि पसलबाट लिने औषधि", "डाक्टरको सल्लाहमा एन्टिभाइरल", "लक्षण व्यवस्थापन", "पर्याप्त निद्रा"],
+            "hi": ["आराम और तरल पदार्थ", "ओवर-द-काउंटर दवाएं", "एंटीवायरल दवाएं", "लक्षण प्रबंधन", "पर्याप्त नींद"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Chicken soup", "Honey and lemon tea", "Ginger tea", "Vitamin C fruits", "Warm fluids"],
+              "ne": ["कुखुराको जुस", "मह र कागतीको चिया", "अदुवाको चिया", "भिटामिन सी भएका फल", "न्यानो तरल पदार्थ"],
+              "hi": ["चिकन सूप", "शहद और नींबू की चाय", "अदरक की चाय", "विटामिन सी फल", "गर्म तरल पदार्थ"]
+            },
+            "avoid": {
+              "en": ["Cold drinks", "Dairy products", "Heavy meals", "Alcohol"],
+              "ne": ["चिसो पेय", "दुधजन्य पदार्थ", "गह्रौं खाना", "रक्सी"],
+              "hi": ["ठंडे पेय", "दूध उत्पाद", "भारी भोजन", "शराब"]
+            }
+          }
+        },
+        "covid19": {
+          "name": {
+            "en": "COVID-19",
+            "ne": "कोभिड-१९",
+            "hi": "कोविड-१९"
+          },
+          "symptoms": {
+            "en": ["Fever", "Dry cough", "Fatigue", "Loss of taste/smell", "Sore throat", "Headache", "Body aches"],
+            "ne": ["ज्वरो", "सुख्खा खोकी", "थकान", "स्वाद/सुगन्ध नहुनु", "घाँटी दुखाई", "टाउको दुखाई", "शरीर दुखाई"],
+            "hi": ["बुखार", "सूखी खांसी", "थकान", "स्वाद/गंध न आना", "गले में दर्द", "सिरदर्द", "शरीर में दर्द"]
+          },
+          "prevention": {
+            "en": ["Get vaccinated", "Wear masks", "Maintain social distance", "Frequent hand washing", "Good ventilation"],
+            "ne": ["टीका लगाउनु", "मास्क लगाउनु", "सामाजिक दूरी राख्नु", "बारम्बार हात धुनु", "राम्रो वायुसंचार"],
+            "hi": ["टीकाकरण करें", "मास्क पहनें", "सामाजिक दूरी बनाएं", "बार-बार हाथ धोएं", "अच्छा वेंटिलेशन"]
+          },
+          "treatment": {
+            "en": ["Rest and isolation", "Symptom management", "Medical consultation", "Oxygen therapy if needed", "Monoclonal antibodies"],
+            "ne": ["विश्राम र अलगाव", "लक्षण व्यवस्थापन", "चिकित्सकीय परामर्श", "आवश्यकतामा अक्सिजन थेरेपी", "मोनोक्लोनल एन्टिबडी"],
+            "hi": ["आराम और अलगाव", "लक्षण प्रबंधन", "चिकित्सकीय परामर्श", "आवश्यकतानुसार ऑक्सीजन थेरेपी", "मोनोक्लोनल एंटीबॉडी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Vitamin C rich foods", "Zinc supplements", "Protein rich diet", "Hydration", "Anti-inflammatory foods"],
+              "ne": ["भिटामिन सी भएका खाना", "जिंक पूरक", "प्रोटिन भएको आहार", "जलयोजन", "एन्टि-इन्फ्लामेटरी खाना"],
+              "hi": ["विटामिन सी युक्त भोजन", "जिंज सप्लीमेंट", "प्रोटीन युक्त आहार", "जलयोजन", "एंटी-इन्फ्लेमेटरी भोजन"]
+            },
+            "avoid": {
+              "en": ["Processed foods", "Excessive sugar", "Alcohol", "Heavy meals"],
+              "ne": ["प्रशोधित खाना", "अधिक चिनी", "रक्सी", "गह्रौं खाना"],
+              "hi": ["प्रोसेस्ड फूड", "अधिक चीनी", "शराब", "भारी भोजन"]
+            }
+          }
+        },
+        "dengue": {
+          "name": {
+            "en": "Dengue Fever",
+            "ne": "डेङ्गु ज्वरो",
+            "hi": "डेंगू बुखार"
+          },
+          "symptoms": {
+            "en": ["High fever", "Severe headache", "Joint and muscle pain", "Rash", "Bleeding gums", "Nausea"],
+            "ne": ["उच्च ज्वरो", "गम्भीर टाउको दुखाई", "जोर्नी र मांसपेशी दुखाई", "खस्रो", "माढी रगत बग्नु", "घाउ लाग्नु"],
+            "hi": ["तेज बुखार", "तीव्र सिरदर्द", "जोड़ों और मांसपेशियों में दर्द", "दाने", "मसूड़ों से खून बहना", "मतली"]
+          },
+          "prevention": {
+            "en": ["Use mosquito nets", "Apply repellents", "Eliminate standing water", "Wear protective clothing", "Use screens on windows"],
+            "ne": ["मल्छर जाली प्रयोग गर्नु", "दुवार प्रयोग गर्नु", "खडे पानी हटाउनु", "सुरक्षात्मक लुगा लगाउनु", "झ्यालमा जाली लगाउनु"],
+            "hi": ["मच्छरदानी का उपयोग करें", "रिपेलेंट लगाएं", "जमा पानी को हटाएं", "सुरक्षात्मक कपड़े पहनें", "खिड़कियों पर जाली लगाएं"]
+          },
+          "treatment": {
+            "en": ["Supportive care", "Fluid management", "Pain relief", "Hospital monitoring if severe", "Rest and hydration"],
+            "ne": ["सहायक देखभाल", "तरल पदार्थ व्यवस्थापन", "दुखाई कम गर्ने", "गम्भीर भएमा अस्पताल निगरानी", "विश्राम र जलयोजन"],
+            "hi": ["सहायक देखभाल", "तरल पदार्थ प्रबंधन", "दर्द से राहत", "गंभीर होने पर अस्पताल निगरानी", "आराम और जलयोजन"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Papaya leaf juice", "Coconut water", "Fresh fruits", "Light meals", "Plenty of fluids"],
+              "ne": ["मेलै पात रस", "नरिवल पानी", "ताजा फलफूल", "हल्का खाना", "धेरै तरल पदार्थ"],
+              "hi": ["पपीता पत्ती का रस", "नारियल पानी", "ताजे फल", "हल्का भोजन", "खूब तरल पदार्थ"]
+            },
+            "avoid": {
+              "en": ["Spicy foods", "Oily foods", "Alcohol", "Caffeine", "Heavy meals"],
+              "ne": ["मसलादार खाना", "तैलिय खाना", "रक्सी", "कफिन", "गह्रौं खाना"],
+              "hi": ["मसालेदार भोजन", "तेलयुक्त भोजन", "शराब", "कैफीन", "भारी भोजन"]
+            }
+          }
+        },
+        "malaria": {
+          "name": {
+            "en": "Malaria",
+            "ne": "मलेरिया",
+            "hi": "मलेरिया"
+          },
+          "symptoms": {
+            "en": ["Cyclic fever", "Chills and sweating", "Headache", "Muscle pain", "Fatigue", "Nausea"],
+            "ne": ["चक्रीय ज्वरो", "चिसो र पसिना", "टाउको दुखाई", "मांसपेशी दुखाई", "थकान", "घाउ लाग्नु"],
+            "hi": ["चक्रीय बुखार", "ठंड और पसीना", "सिरदर्द", "मांसपेशियों में दर्द", "थकान", "मतली"]
+          },
+          "prevention": {
+            "en": ["Antimalarial prophylaxis", "Mosquito protection", "Sleep under nets", "Avoid peak mosquito hours", "Use repellents"],
+            "ne": ["मलेरिया रोकथाम", "मल्छर सुरक्षा", "जालीमुनि सुत्नु", "मल्छरको चरम समय बच्नु", "दुवार प्रयोग गर्नु"],
+            "hi": ["मलेरिया रोधी प्रोफिलैक्सिस", "मच्छर सुरक्षा", "जाल के नीचे सोएं", "मच्छर के चरम घंटों से बचें", "रिपेलेंट का उपयोग करें"]
+          },
+          "treatment": {
+            "en": ["Antimalarial medications", "Supportive care", "Fluid replacement", "Medical supervision", "Rest"],
+            "ne": ["मलेरिया विरोधी दवाईहरू", "सहायक देखभाल", "तरल पदार्थ प्रतिस्थापन", "चिकित्सकीय निगरानी", "विश्राम"],
+            "hi": ["मलेरिया रोधी दवाएं", "सहायक देखभाल", "तरल पदार्थ प्रतिस्थापन", "चिकित्सकीय पर्यवेक्षण", "आराम"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["High protein diet", "Iron-rich foods", "Vitamin C sources", "Adequate hydration", "Fresh fruits"],
+              "ne": ["उच्च प्रोटिन आहार", "फलाम भएको खाना", "भिटामिन सी स्रोत", "पर्याप्त पानी", "ताजा फलफूल"],
+              "hi": ["उच्च प्रोटीन आहार", "लोहे से भरपूर भोजन", "विटामिन सी स्रोत", "पर्याप्त हाइड्रेशन", "ताजे फल"]
+            },
+            "avoid": {
+              "en": ["Alcohol", "Caffeine", "Spicy foods", "Heavy meals", "Processed foods"],
+              "ne": ["रक्सी", "कफिन", "मसलादार खाना", "गह्रौं खाना", "प्रशोधित खाना"],
+              "hi": ["शराब", "कैफीन", "मसालेदार भोजन", "भारी भोजन", "प्रोसेस्ड फूड"]
+            }
+          }
+        }
+      }
+    },
+    "genetic": {
+      "name": {
+        "en": "Genetic / Congenital Diseases",
+        "ne": "आनुवंशिक / जन्मजात रोगहरू",
+        "hi": "आनुवंशिक / जन्मजात रोग"
+      },
+      "diseases": {
+        "down_syndrome": {
+          "name": {
+            "en": "Down Syndrome",
+            "ne": "डाउन सिन्ड्रोम",
+            "hi": "डाउन सिंड्रोम"
+          },
+          "symptoms": {
+            "en": ["Distinctive facial features", "Intellectual disability", "Delayed development", "Heart defects", "Vision problems"],
+            "ne": ["विशिष्ट अनुहारका विशेषताहरू", "बौद्धिक अक्षमता", "विकासमा ढिलो", "हृदय दोष", "दृष्टि समस्या"],
+            "hi": ["विशिष्ट चेहरे की विशेषताएं", "बौद्धिक अक्षमता", "विकास में देरी", "हृदय दोष", "दृष्टि समस्याएं"]
+          },
+          "prevention": {
+            "en": ["Genetic counseling", "Prenatal screening", "Early intervention", "Regular medical checkups", "Specialized care"],
+            "ne": ["आनुवंशिक परामर्श", "प्रसवपूर्व जाँच", "प्रारम्भिक हस्तक्षेप", "नियमित चिकित्सकीय जाँच", "विशेष देखभाल"],
+            "hi": ["आनुवंशिक परामर्श", "प्रसवपूर्व जांच", "प्रारंभिक हस्तक्षेप", "नियमित चिकित्सकीय जांच", "विशेष देखभाल"]
+          },
+          "treatment": {
+            "en": ["Early intervention programs", "Speech therapy", "Physical therapy", "Occupational therapy", "Educational support"],
+            "ne": ["प्रारम्भिक हस्तक्षेप कार्यक्रम", "भाषा चिकित्सा", "शारीरिक चिकित्सा", "व्यावसायिक चिकित्सा", "शैक्षिक सहयोग"],
+            "hi": ["प्रारंभिक हस्तक्षेप कार्यक्रम", "भाषण चिकित्सा", "शारीरिक चिकित्सा", "व्यावसायिक चिकित्सा", "शैक्षिक सहयोग"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Balanced nutrition", "Folic acid supplements", "Omega-3 fatty acids", "Antioxidant rich foods", "Protein rich diet"],
+              "ne": ["सन्तुलित पोषण", "फोलिक एसिड पूरक", "ओमेगा-३ फ्याटी एसिड", "एन्टिअक्सिडेन्ट भएका खाना", "प्रोटिन भएको आहार"],
+              "hi": ["संतुलित पोषण", "फोलिक एसिड सप्लीमेंट", "ओमेगा-3 फैटी एसिड", "एंटीऑक्सिडेंट युक्त भोजन", "प्रोटिन युक्त आहार"]
+            },
+            "avoid": {
+              "en": ["Excessive sugar", "Processed foods", "Alcohol", "Tobacco"],
+              "ne": ["अधिक चिनी", "प्रशोधित खाना", "रक्सी", "तमाखु"],
+              "hi": ["अधिक चीनी", "प्रोसेस्ड फूड", "शराब", "तंबाकू"]
+            }
+          }
+        }
+      }
+    },
+    "neurological": {
+      "name": {
+        "en": "Neurological / Mental Disorders",
+        "ne": "स्नायु / मानसिक विकारहरू",
+        "hi": "न्यूरोलॉजिकल / मानसिक विकार"
+      },
+      "diseases": {
+        "alzheimers": {
+          "name": {
+            "en": "Alzheimer's Disease",
+            "ne": "अल्जाइमर रोग",
+            "hi": "अल्जाइमर रोग"
+          },
+          "symptoms": {
+            "en": ["Memory loss", "Confusion", "Difficulty with daily tasks", "Personality changes", "Language problems"],
+            "ne": ["स्मृति हराउनु", "भ्रम", "दैनिक कार्यमा कठिनाई", "व्यक्तित्व परिवर्तन", "भाषा समस्या"],
+            "hi": ["स्मृति हानि", "भ्रम", "दैनिक कार्यों में कठिनाई", "व्यक्तित्व परिवर्तन", "भाषा समस्याएं"]
+          },
+          "prevention": {
+            "en": ["Mental exercises", "Physical activity", "Healthy diet", "Social engagement", "Quality sleep"],
+            "ne": ["मानसिक व्यायाम", "शारीरिक गतिविधि", "स्वस्थ आहार", "सामाजिक संलग्नता", "गुणस्तरीय निद्रा"],
+            "hi": ["मानसिक व्यायाम", "शारीरिक गतिविधि", "स्वस्थ आहार", "सामाजिक संलग्नता", "गुणवत्तापूर्ण निद्रा"]
+          },
+          "treatment": {
+            "en": ["Medication management", "Cognitive therapy", "Behavioral therapy", "Support groups", "Caregiver support"],
+            "ne": ["औषधि व्यवस्थापन", "संज्ञानात्मक चिकित्सा", "व्यवहार चिकित्सा", "सहयोग समूह", "देखभालकर्ता सहयोग"],
+            "hi": ["दवा प्रबंधन", "संज्ञानात्मक चिकित्सा", "व्यवहार चिकित्सा", "सहयोग समूह", "देखभालकर्ता सहयोग"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Omega-3 fatty acids", "Antioxidant rich foods", "B vitamins", "Mediterranean diet", "Brain-healthy foods"],
+              "ne": ["ओमेगा-३ फ्याटी एसिड", "एन्टिअक्सिडेन्ट भएका खाना", "बी भिटामिनहरू", "मेडिटेरेनियन आहार", "दिमागको लागि राम्रो खाना"],
+              "hi": ["ओमेगा-3 फैटी एसिड", "एंटीऑक्सिडेंट युक्त भोजन", "बी विटामिन", "मेडिटेरेनियन आहार", "मस्तिष्क-स्वस्थ भोजन"]
+            },
+            "avoid": {
+              "en": ["High sugar foods", "Processed foods", "Excessive alcohol", "Trans fats"],
+              "ne": ["उच्च चिनी भएका खाना", "प्रशोधित खाना", "अधिक रक्सी", "ट्रान्स फ्याट"],
+              "hi": ["उच्च चीनी भोजन", "प्रोसेस्ड फूड", "अधिक शराब", "ट्रांस फैट"]
+            }
+          }
+        }
+      }
+    },
+    "cardiovascular": {
+      "name": {
+        "en": "Cardiovascular Diseases",
+        "ne": "हृदय र रक्तवाहिका रोगहरू",
+        "hi": "हृदय रोग"
+      },
+      "diseases": {
+        "hypertension": {
+          "name": {
+            "en": "Hypertension",
+            "ne": "उच्च रक्तचाप",
+            "hi": "उच्च रक्तचाप"
+          },
+          "symptoms": {
+            "en": ["High blood pressure", "Headaches", "Dizziness", "Chest pain", "Shortness of breath"],
+            "ne": ["उच्च रक्तचाप", "टाउको दुखाई", "चक्कर", "छाती दुखाई", "सास फेर्न गाह्रो"],
+            "hi": ["उच्च रक्तचाप", "सिरदर्द", "चक्कर", "छाती में दर्द", "सांस लेने में कठिनाई"]
+          },
+          "prevention": {
+            "en": ["Reduce salt intake", "Regular exercise", "Maintain healthy weight", "Limit alcohol", "Stress management"],
+            "ne": ["नुनको सेवन कम गर्नु", "नियमित व्यायाम", "स्वस्थ तौल राख्नु", "रक्सी सीमित गर्नु", "तनाव व्यवस्थापन"],
+            "hi": ["नमक का सेवन कम करें", "नियमित व्यायाम", "स्वस्थ वजन बनाए रखें", "शराब सीमित करें", "तनाव प्रबंधन"]
+          },
+          "treatment": {
+            "en": ["Blood pressure medication", "Lifestyle modifications", "Regular monitoring", "Dietary changes", "Exercise program"],
+            "ne": ["रक्तचाप औषधि", "जीवनशैली परिवर्तन", "नियमित निरीक्षण", "आहार परिवर्तन", "व्यायाम कार्यक्रम"],
+            "hi": ["रक्तचाप दवा", "जीवनशैली संशोधन", "नियमित निगरानी", "आहार परिवर्तन", "व्यायाम कार्यक्रम"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Low-sodium foods", "Potassium rich foods", "Fruits and vegetables", "Whole grains", "Lean proteins"],
+              "ne": ["कम नुन भएका खाना", "पोटासियम भएका खाना", "फलफूल र सागपात", "साबुत अनाज", "कम चिल्लो प्रोटिन"],
+              "hi": ["कम नमक वाले भोजन", "पोटैशियम युक्त भोजन", "फल और सब्जियां", "साबुत अनाज", "दुबला प्रोटीन"]
+            },
+            "avoid": {
+              "en": ["High sodium foods", "Processed meats", "Excessive alcohol", "Caffeine", "Sugary foods"],
+              "ne": ["उच्च नुन भएका खाना", "प्रशोधित मासु", "अधिक रक्सी", "कफिन", "चिनी भएका खाना"],
+              "hi": ["उच्च नमक वाले भोजन", "प्रोसेस्ड मीट", "अधिक शराब", "कैफीन", "चीनी वाले भोजन"]
+            }
+          }
+        },
+        "diabetes": {
+          "name": {
+            "en": "Diabetes",
+            "ne": "मधुमेह",
+            "hi": "मधुमेह"
+          },
+          "symptoms": {
+            "en": ["Frequent urination", "Excessive thirst", "Increased hunger", "Weight loss", "Fatigue", "Blurred vision"],
+            "ne": ["बारम्बार पिसाब", "अधिक तिर्खा", "बढी भोक", "तौल घट्नु", "थकान", "दृष्टि धमिलो"],
+            "hi": ["बार-बार पेशाब", "अधिक प्यास", "बढ़ी हुई भूख", "वजन कम होना", "थकान", "धुंधली दृष्टि"]
+          },
+          "prevention": {
+            "en": ["Maintain healthy weight", "Regular exercise", "Balanced diet", "Monitor blood sugar", "Avoid smoking"],
+            "ne": ["स्वस्थ तौल राख्नु", "नियमित व्यायाम", "सन्तुलित आहार", "रगतको चिनी निगरानी", "धूम्रपान नगर्नु"],
+            "hi": ["स्वस्थ वजन बनाए रखें", "नियमित व्यायाम", "संतुलित आहार", "रक्त शर्करा की निगरानी", "धूम्रपान से बचें"]
+          },
+          "treatment": {
+            "en": ["Insulin therapy", "Oral medications", "Blood sugar monitoring", "Diet management", "Exercise"],
+            "ne": ["इन्सुलिन चिकित्सा", "मुखबाट लिने औषधि", "रगतको चिनी निगरानी", "आहार व्यवस्थापन", "व्यायाम"],
+            "hi": ["इंसुलिन थेरेपी", "मौखिक दवाएं", "रक्त शर्करा निगरानी", "आहार प्रबंधन", "व्यायाम"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Complex carbohydrates", "High fiber foods", "Lean proteins", "Healthy fats", "Non-starchy vegetables"],
+              "ne": ["जटिल कार्बोहाइड्रेट", "उच्च फाइबर खाना", "दुबला प्रोटिन", "स्वस्थ चिल्लो", "स्टार्च नभएका सागपात"],
+              "hi": ["जटिल कार्बोहाइड्रेट", "उच्च फाइबर भोजन", "दुबला प्रोटीन", "स्वस्थ वसा", "स्टार्च रहित सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Simple sugars", "Refined carbohydrates", "Sugary drinks", "Processed foods", "Excessive alcohol"],
+              "ne": ["सरल चिनी", "परिष्कृत कार्बोहाइड्रेट", "चिनी भएका पेय", "प्रशोधित खाना", "अधिक रक्सी"],
+              "hi": ["सरल शर्करा", "परिष्कृत कार्बोहाइड्रेट", "चीनी वाले पेय", "प्रोसेस्ड फूड", "अधिक शराब"]
+            }
+          }
+        },
+        "heart_disease": {
+          "name": {
+            "en": "Heart Disease",
+            "ne": "हृदय रोग",
+            "hi": "हृदय रोग"
+          },
+          "symptoms": {
+            "en": ["Chest pain", "Shortness of breath", "Fatigue", "Swelling in legs", "Irregular heartbeat", "Dizziness"],
+            "ne": ["छाती दुखाई", "सास फेर्न गाह्रो", "थकान", "खुट्टामा सुनिनु", "अनियमित हृदय धड्कन", "चक्कर"],
+            "hi": ["छाती में दर्द", "सांस लेने में कठिनाई", "थकान", "पैरों में सूजन", "अनियमित हृदय गति", "चक्कर"]
+          },
+          "prevention": {
+            "en": ["Regular exercise", "Healthy diet", "Quit smoking", "Manage stress", "Regular checkups"],
+            "ne": ["नियमित व्यायाम", "स्वस्थ आहार", "धूम्रपान छोड्नु", "तनाव व्यवस्थापन", "नियमित जाँच"],
+            "hi": ["नियमित व्यायाम", "स्वस्थ आहार", "धूम्रपान छोड़ें", "तनाव प्रबंधन", "नियमित जांच"]
+          },
+          "treatment": {
+            "en": ["Medications", "Lifestyle changes", "Surgery if needed", "Cardiac rehabilitation", "Regular monitoring"],
+            "ne": ["औषधि", "जीवनशैली परिवर्तन", "आवश्यकतामा शल्यक्रिया", "हृदय पुनर्स्थापना", "नियमित निगरानी"],
+            "hi": ["दवाएं", "जीवनशैली परिवर्तन", "आवश्यकतानुसार सर्जरी", "कार्डियक पुनर्वास", "नियमित निगरानी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Omega-3 fatty acids", "Fruits and vegetables", "Whole grains", "Lean proteins", "Nuts and seeds"],
+              "ne": ["ओमेगा-३ फ्याटी एसिड", "फलफूल र सागपात", "साबुत अनाज", "दुबला प्रोटिन", "बदाम र गेडागुडी"],
+              "hi": ["ओमेगा-3 फैटी एसिड", "फल और सब्जियां", "साबुत अनाज", "दुबला प्रोटीन", "नट्स और बीज"]
+            },
+            "avoid": {
+              "en": ["Saturated fats", "Trans fats", "Excessive salt", "Processed foods", "Sugary foods"],
+              "ne": ["सघन चिल्लो", "ट्रान्स फ्याट", "अधिक नुन", "प्रशोधित खाना", "चिनी भएका खाना"],
+              "hi": ["संतृप्त वसा", "ट्रांस फैट", "अधिक नमक", "प्रोसेस्ड फूड", "चीनी वाले भोजन"]
+            }
+          }
+        }
+      }
+    },
+    "respiratory": {
+      "name": {
+        "en": "Respiratory Diseases",
+        "ne": "श्वसन रोगहरू",
+        "hi": "श्वसन रोग"
+      },
+      "diseases": {
+        "asthma": {
+          "name": {
+            "en": "Asthma",
+            "ne": "दम",
+            "hi": "दमा"
+          },
+          "symptoms": {
+            "en": ["Wheezing", "Shortness of breath", "Chest tightness", "Coughing", "Difficulty breathing"],
+            "ne": ["सास फेर्न गाह्रो", "सास फेर्न गाह्रो", "छाती कसिनु", "खोकी", "सास फेर्न गाह्रो"],
+            "hi": ["घरघराहट", "सांस लेने में कठिनाई", "छाती में जकड़न", "खांसी", "सांस लेने में कठिनाई"]
+          },
+          "prevention": {
+            "en": ["Avoid triggers", "Use inhalers", "Regular checkups", "Clean environment", "Exercise carefully"],
+            "ne": ["ट्रिगर बच्नु", "इन्हेलर प्रयोग गर्नु", "नियमित जाँच", "सफा वातावरण", "सावधानीपूर्वक व्यायाम"],
+            "hi": ["ट्रिगर्स से बचें", "इनहेलर का उपयोग करें", "नियमित जांच", "स्वच्छ वातावरण", "सावधानी से व्यायाम"]
+          },
+          "treatment": {
+            "en": ["Inhalers", "Avoid triggers", "Regular medication", "Lung function tests", "Emergency plan"],
+            "ne": ["इन्हेलर", "ट्रिगर बच्नु", "नियमित औषधि", "फोक्सो कार्य परीक्षण", "आकस्मिक योजना"],
+            "hi": ["इनहेलर", "ट्रिगर्स से बचें", "नियमित दवा", "फेफड़े के कार्य परीक्षण", "आपातकालीन योजना"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Anti-inflammatory foods", "Omega-3 fatty acids", "Vitamin C rich foods", "Magnesium rich foods", "Fresh fruits"],
+              "ne": ["एन्टि-इन्फ्लामेटरी खाना", "ओमेगा-३ फ्याटी एसिड", "भिटामिन सी भएका खाना", "म्याग्नेसियम भएका खाना", "ताजा फलफूल"],
+              "hi": ["एंटी-इन्फ्लेमेटरी भोजन", "ओमेगा-3 फैटी एसिड", "विटामिन सी युक्त भोजन", "मैग्नीशियम युक्त भोजन", "ताजे फल"]
+            },
+            "avoid": {
+              "en": ["Sulfite containing foods", "Processed foods", "Dairy products", "Wheat products", "Sugary foods"],
+              "ne": ["सल्फाइट भएका खाना", "प्रशोधित खाना", "दुधजन्य पदार्थ", "गहुँ उत्पादन", "चिनी भएका खाना"],
+              "hi": ["सल्फाइट युक्त भोजन", "प्रोसेस्ड फूड", "दूध उत्पाद", "गेहूं उत्पाद", "चीनी वाले भोजन"]
+            }
+          }
+        },
+        "pneumonia": {
+          "name": {
+            "en": "Pneumonia",
+            "ne": "निमोनिया",
+            "hi": "निमोनिया"
+          },
+          "symptoms": {
+            "en": ["Chest pain", "Cough with phlegm", "Fever", "Difficulty breathing", "Fatigue", "Loss of appetite"],
+            "ne": ["छाती दुखाई", "कफ भएको खोकी", "ज्वरो", "सास फेर्न गाह्रो", "थकान", "भोक नलाग्नु"],
+            "hi": ["छाती में दर्द", "बलगम के साथ खांसी", "बुखार", "सांस लेने में कठिनाई", "थकान", "भूख न लगना"]
+          },
+          "prevention": {
+            "en": ["Get vaccinated", "Good hygiene", "Avoid smoking", "Regular exercise", "Healthy diet"],
+            "ne": ["टीका लगाउनु", "राम्रो स्वच्छता", "धूम्रपान नगर्नु", "नियमित व्यायाम", "स्वस्थ आहार"],
+            "hi": ["टीकाकरण करें", "अच्छी स्वच्छता", "धूम्रपान से बचें", "नियमित व्यायाम", "स्वस्थ आहार"]
+          },
+          "treatment": {
+            "en": ["Antibiotics", "Rest and fluids", "Oxygen therapy", "Hospitalization if severe", "Follow-up care"],
+            "ne": ["एन्टिबायोटिक", "विश्राम र तरल पदार्थ", "अक्सिजन थेरेपी", "गम्भीर भएमा अस्पताल", "पछिको देखभाल"],
+            "hi": ["एंटीबायोटिक्स", "आराम और तरल पदार्थ", "ऑक्सीजन थेरेपी", "गंभीर होने पर अस्पताल", "अनुवर्ती देखभाल"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Clear fluids", "Broth and soups", "Soft foods", "Protein rich foods", "Vitamin C sources"],
+              "ne": ["सफा तरल पदार्थ", "रस र सूप", "नरम खाना", "प्रोटिन भएका खाना", "भिटामिन सी स्रोत"],
+              "hi": ["साफ तरल पदार्थ", "शोरबा और सूप", "नरम भोजन", "प्रोटीन युक्त भोजन", "विटामिन सी स्रोत"]
+            },
+            "avoid": {
+              "en": ["Dairy products", "Spicy foods", "Cold drinks", "Heavy meals", "Alcohol"],
+              "ne": ["दुधजन्य पदार्थ", "मसलादार खाना", "चिसो पेय", "गह्रौं खाना", "रक्सी"],
+              "hi": ["दूध उत्पाद", "मसालेदार भोजन", "ठंडे पेय", "भारी भोजन", "शराब"]
+            }
+          }
+        }
+      }
+    },
+    "digestive": {
+      "name": {
+        "en": "Digestive Diseases",
+        "ne": "पाचन रोगहरू",
+        "hi": "पाचन रोग"
+      },
+      "diseases": {
+        "gastritis": {
+          "name": {
+            "en": "Gastritis",
+            "ne": "ग्यास्ट्राइटिस",
+            "hi": "गैस्ट्राइटिस"
+          },
+          "symptoms": {
+            "en": ["Stomach pain", "Nausea", "Vomiting", "Loss of appetite", "Bloating", "Indigestion"],
+            "ne": ["पेट दुखाई", "घाउ लाग्नु", "वान्ता", "भोक नलाग्नु", "पेट फुल्नु", "अपच"],
+            "hi": ["पेट में दर्द", "मतली", "उल्टी", "भूख न लगना", "पेट फूलना", "अपच"]
+          },
+          "prevention": {
+            "en": ["Avoid spicy foods", "Eat smaller meals", "Avoid alcohol", "Manage stress", "Regular meals"],
+            "ne": ["मसलादार खाना बच्नु", "साना खाना खानु", "रक्सी नगर्नु", "तनाव व्यवस्थापन", "नियमित खाना"],
+            "hi": ["मसालेदार भोजन से बचें", "छोटे भोजन खाएं", "शराब से बचें", "तनाव प्रबंधन", "नियमित भोजन"]
+          },
+          "treatment": {
+            "en": ["Antacids", "Proton pump inhibitors", "Dietary changes", "Stress management", "Regular checkups"],
+            "ne": ["एन्टासिड", "प्रोटोन पम्प इन्हिबिटर", "आहार परिवर्तन", "तनाव व्यवस्थापन", "नियमित जाँच"],
+            "hi": ["एंटासिड", "प्रोटॉन पंप इन्हिबिटर", "आहार परिवर्तन", "तनाव प्रबंधन", "नियमित जांच"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Bland foods", "Rice", "Bananas", "Toast", "Yogurt", "Boiled vegetables"],
+              "ne": ["हल्का खाना", "भात", "केरा", "टोस्ट", "दही", "उमालिएका सागपात"],
+              "hi": ["हल्का भोजन", "चावल", "केले", "टोस्ट", "दही", "उबली सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Spicy foods", "Acidic foods", "Caffeine", "Alcohol", "Fried foods"],
+              "ne": ["मसलादार खाना", "अम्लीय खाना", "कफिन", "रक्सी", "फ्राइड खाना"],
+              "hi": ["मसालेदार भोजन", "अम्लीय भोजन", "कैफीन", "शराब", "तली हुई चीजें"]
+            }
+          }
+        },
+        "ulcer": {
+          "name": {
+            "en": "Peptic Ulcer",
+            "ne": "पेप्टिक अल्सर",
+            "hi": "पेप्टिक अल्सर"
+          },
+          "symptoms": {
+            "en": ["Burning stomach pain", "Bloating", "Nausea", "Loss of appetite", "Weight loss", "Vomiting"],
+            "ne": ["पेट जल्ने दुखाई", "पेट फुल्नु", "घाउ लाग्नु", "भोक नलाग्नु", "तौल घट्नु", "वान्ता"],
+            "hi": ["पेट में जलन", "पेट फूलना", "मतली", "भूख न लगना", "वजन कम होना", "उल्टी"]
+          },
+          "prevention": {
+            "en": ["Avoid NSAIDs", "Manage stress", "Quit smoking", "Limit alcohol", "Regular meals"],
+            "ne": ["एनएसएआईडी बच्नु", "तनाव व्यवस्थापन", "धूम्रपान छोड्नु", "रक्सी सीमित गर्नु", "नियमित खाना"],
+            "hi": ["एनएसएआईडी से बचें", "तनाव प्रबंधन", "धूम्रपान छोड़ें", "शराब सीमित करें", "नियमित भोजन"]
+          },
+          "treatment": {
+            "en": ["Antibiotics for H. pylori", "Proton pump inhibitors", "H2 blockers", "Lifestyle changes", "Regular monitoring"],
+            "ne": ["एच. पाइलोरीको लागि एन्टिबायोटिक", "प्रोटोन पम्प इन्हिबिटर", "एच२ ब्लकर", "जीवनशैली परिवर्तन", "नियमित निगरानी"],
+            "hi": ["एच. पाइलोरी के लिए एंटीबायोटिक्स", "प्रोटॉन पंप इन्हिबिटर", "एच2 ब्लॉकर्स", "जीवनशैली परिवर्तन", "नियमित निगरानी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Bland diet", "High fiber foods", "Probiotics", "Lean proteins", "Fruits and vegetables"],
+              "ne": ["हल्का आहार", "उच्च फाइबर खाना", "प्रोबायोटिक", "दुबला प्रोटिन", "फलफूल र सागपात"],
+              "hi": ["हल्का आहार", "उच्च फाइबर भोजन", "प्रोबायोटिक्स", "दुबला प्रोटीन", "फल और सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Spicy foods", "Acidic foods", "Caffeine", "Alcohol", "Smoking"],
+              "ne": ["मसलादार खाना", "अम्लीय खाना", "कफिन", "रक्सी", "धूम्रपान"],
+              "hi": ["मसालेदार भोजन", "अम्लीय भोजन", "कैफीन", "शराब", "धूम्रपान"]
+            }
+          }
+        }
+      }
+    },
+    "skin": {
+      "name": {
+        "en": "Skin Diseases",
+        "ne": "छाला रोगहरू",
+        "hi": "त्वचा रोग"
+      },
+      "diseases": {
+        "eczema": {
+          "name": {
+            "en": "Eczema",
+            "ne": "एक्जिमा",
+            "hi": "एक्जिमा"
+          },
+          "symptoms": {
+            "en": ["Itchy skin", "Red patches", "Dry skin", "Cracking", "Blisters", "Thickened skin"],
+            "ne": ["छाला खजलो", "रातो धब्बा", "सुख्खा छाला", "फुट्नु", "फोका", "बाक्लो छाला"],
+            "hi": ["त्वचा में खुजली", "लाल धब्बे", "सूखी त्वचा", "दरारें", "फफोले", "मोटी त्वचा"]
+          },
+          "prevention": {
+            "en": ["Moisturize regularly", "Avoid triggers", "Use gentle soaps", "Wear cotton clothes", "Manage stress"],
+            "ne": ["नियमित मोइस्चराइज", "ट्रिगर बच्नु", "हल्का साबुन प्रयोग गर्नु", "कपास लुगा लगाउनु", "तनाव व्यवस्थापन"],
+            "hi": ["नियमित मॉइस्चराइज करें", "ट्रिगर्स से बचें", "हल्के साबुन का उपयोग करें", "सूती कपड़े पहनें", "तनाव प्रबंधन"]
+          },
+          "treatment": {
+            "en": ["Topical corticosteroids", "Moisturizers", "Antihistamines", "Avoid scratching", "Phototherapy"],
+            "ne": ["टपिकल कर्टिकोस्टेरोइड", "मोइस्चराइजर", "एन्टिहिस्टामिन", "खजलो बच्नु", "फोटोथेरेपी"],
+            "hi": ["टॉपिकल कॉर्टिकोस्टेरॉइड", "मॉइस्चराइजर", "एंटीहिस्टामाइन", "खुजली से बचें", "फोटोथेरेपी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Omega-3 fatty acids", "Probiotics", "Vitamin D", "Anti-inflammatory foods", "Zinc rich foods"],
+              "ne": ["ओमेगा-३ फ्याटी एसिड", "प्रोबायोटिक", "भिटामिन डी", "एन्टि-इन्फ्लामेटरी खाना", "जिंक भएका खाना"],
+              "hi": ["ओमेगा-3 फैटी एसिड", "प्रोबायोटिक्स", "विटामिन डी", "एंटी-इन्फ्लेमेटरी भोजन", "जिंक युक्त भोजन"]
+            },
+            "avoid": {
+              "en": ["Dairy products", "Gluten", "Processed foods", "Sugary foods", "Alcohol"],
+              "ne": ["दुधजन्य पदार्थ", "ग्लुटेन", "प्रशोधित खाना", "चिनी भएका खाना", "रक्सी"],
+              "hi": ["दूध उत्पाद", "ग्लूटेन", "प्रोसेस्ड फूड", "चीनी वाले भोजन", "शराब"]
+            }
+          }
+        },
+        "psoriasis": {
+          "name": {
+            "en": "Psoriasis",
+            "ne": "सोरायसिस",
+            "hi": "सोरायसिस"
+          },
+          "symptoms": {
+            "en": ["Red patches with scales", "Itching", "Dry skin", "Joint pain", "Nail changes", "Scalp scaling"],
+            "ne": ["कलस भएका रातो धब्बा", "खजलो", "सुख्खा छाला", "जोर्नी दुखाई", "नङ परिवर्तन", "टाउकोको छाला"],
+            "hi": ["पपड़ीदार लाल धब्बे", "खुजली", "सूखी त्वचा", "जोड़ों में दर्द", "नाखून में बदलाव", "सिर की त्वचा"]
+          },
+          "prevention": {
+            "en": ["Manage stress", "Avoid triggers", "Keep skin moisturized", "Get sunlight", "Healthy lifestyle"],
+            "ne": ["तनाव व्यवस्थापन", "ट्रिगर बच्नु", "छाला नम राख्नु", "सूर्यको किरण", "स्वस्थ जीवनशैली"],
+            "hi": ["तनाव प्रबंधन", "ट्रिगर्स से बचें", "त्वचा को नम रखें", "सूर्य की किरणें", "स्वस्थ जीवनशैली"]
+          },
+          "treatment": {
+            "en": ["Topical treatments", "Phototherapy", "Systemic medications", "Biologics", "Lifestyle changes"],
+            "ne": ["टपिकल उपचार", "फोटोथेरेपी", "सिस्टेमिक औषधि", "बायोलोजिक्स", "जीवनशैली परिवर्तन"],
+            "hi": ["टॉपिकल उपचार", "फोटोथेरेपी", "सिस्टेमिक दवाएं", "बायोलॉजिक्स", "जीवनशैली परिवर्तन"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Anti-inflammatory foods", "Omega-3 fatty acids", "Vitamin D", "Antioxidants", "Fruits and vegetables"],
+              "ne": ["एन्टि-इन्फ्लामेटरी खाना", "ओमेगा-३ फ्याटी एसिड", "भिटामिन डी", "एन्टिअक्सिडेन्ट", "फलफूल र सागपात"],
+              "hi": ["एंटी-इन्फ्लेमेटरी भोजन", "ओमेगा-3 फैटी एसिड", "विटामिन डी", "एंटीऑक्सिडेंट", "फल और सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Red meat", "Processed foods", "Alcohol", "Sugary foods", "Nightshade vegetables"],
+              "ne": ["रातो मासु", "प्रशोधित खाना", "रक्सी", "चिनी भएका खाना", "नाइटशेड सागपात"],
+              "hi": ["लाल मांस", "प्रोसेस्ड फूड", "शराब", "चीनी वाले भोजन", "नाइटशेड सब्जियां"]
+            }
+          }
+        },
+        "acne": {
+          "name": {
+            "en": "Acne",
+            "ne": "एक्ने",
+            "hi": "मुंहासे"
+          },
+          "symptoms": {
+            "en": ["Pimples", "Blackheads", "Whiteheads", "Cysts", "Nodules", "Scarring"],
+            "ne": ["पिम्पल", "ब्ल्याकहेड", "व्हाइटहेड", "सिस्ट", "नोड्युल", "दाग"],
+            "hi": ["पिंपल्स", "ब्लैकहेड्स", "व्हाइटहेड्स", "सिस्ट", "नोड्यूल्स", "दाग"]
+          },
+          "prevention": {
+            "en": ["Gentle cleansing", "Don't pick at skin", "Use non-comedogenic products", "Manage stress", "Healthy diet"],
+            "ne": ["हल्का सफाई", "छाला नोच्नु नगर्नु", "नन-कमेडोजेनिक उत्पादन", "तनाव व्यवस्थापन", "स्वस्थ आहार"],
+            "hi": ["हल्की सफाई", "त्वचा को न छुएं", "नॉन-कॉमेडोजेनिक उत्पाद", "तनाव प्रबंधन", "स्वस्थ आहार"]
+          },
+          "treatment": {
+            "en": ["Topical treatments", "Oral medications", "Professional treatments", "Good skin care", "Regular cleaning"],
+            "ne": ["टपिकल उपचार", "मुखबाट लिने औषधि", "व्यावसायिक उपचार", "राम्रो छाला देखभाल", "नियमित सफाई"],
+            "hi": ["टॉपिकल उपचार", "मौखिक दवाएं", "पेशेवर उपचार", "अच्छी त्वचा देखभाल", "नियमित सफाई"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Low glycemic foods", "Omega-3 fatty acids", "Zinc rich foods", "Antioxidants", "Water"],
+              "ne": ["कम ग्लाइसेमिक खाना", "ओमेगा-३ फ्याटी एसिड", "जिंक भएका खाना", "एन्टिअक्सिडेन्ट", "पानी"],
+              "hi": ["कम ग्लाइसेमिक भोजन", "ओमेगा-3 फैटी एसिड", "जिंक युक्त भोजन", "एंटीऑक्सिडेंट", "पानी"]
+            },
+            "avoid": {
+              "en": ["High glycemic foods", "Dairy products", "Processed foods", "Sugary foods", "Fried foods"],
+              "ne": ["उच्च ग्लाइसेमिक खाना", "दुधजन्य पदार्थ", "प्रशोधित खाना", "चिनी भएका खाना", "फ्राइड खाना"],
+              "hi": ["उच्च ग्लाइसेमिक भोजन", "दूध उत्पाद", "प्रोसेस्ड फूड", "चीनी वाले भोजन", "तली हुई चीजें"]
+            }
+          }
+        }
+      }
+    },
+    "mental_health": {
+      "name": {
+        "en": "Mental Health Disorders",
+        "ne": "मानसिक स्वास्थ्य विकारहरू",
+        "hi": "मानसिक स्वास्थ्य विकार"
+      },
+      "diseases": {
+        "depression": {
+          "name": {
+            "en": "Depression",
+            "ne": "अवसाद",
+            "hi": "अवसाद"
+          },
+          "symptoms": {
+            "en": ["Persistent sadness", "Loss of interest", "Fatigue", "Sleep problems", "Appetite changes", "Difficulty concentrating"],
+            "ne": ["लगातार दुःख", "रुचि हराउनु", "थकान", "निद्रा समस्या", "भोक परिवर्तन", "ध्यान केन्द्रित गर्न गाह्रो"],
+            "hi": ["लगातार उदासी", "रुचि का नुकसान", "थकान", "नींद की समस्या", "भूख में बदलाव", "ध्यान केंद्रित करने में कठिनाई"]
+          },
+          "prevention": {
+            "en": ["Regular exercise", "Social connections", "Stress management", "Healthy sleep", "Professional help"],
+            "ne": ["नियमित व्यायाम", "सामाजिक सम्पर्क", "तनाव व्यवस्थापन", "स्वस्थ निद्रा", "व्यावसायिक सहयोग"],
+            "hi": ["नियमित व्यायाम", "सामाजिक संबंध", "तनाव प्रबंधन", "स्वस्थ नींद", "पेशेवर सहायता"]
+          },
+          "treatment": {
+            "en": ["Psychotherapy", "Antidepressants", "Lifestyle changes", "Support groups", "Regular monitoring"],
+            "ne": ["मनोचिकित्सा", "एन्टिडिप्रेसेन्ट", "जीवनशैली परिवर्तन", "सहयोग समूह", "नियमित निगरानी"],
+            "hi": ["मनोचिकित्सा", "एंटीडिप्रेसेंट", "जीवनशैली परिवर्तन", "सहयोग समूह", "नियमित निगरानी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Omega-3 fatty acids", "B vitamins", "Complex carbohydrates", "Protein rich foods", "Fruits and vegetables"],
+              "ne": ["ओमेगा-३ फ्याटी एसिड", "बी भिटामिनहरू", "जटिल कार्बोहाइड्रेट", "प्रोटिन भएका खाना", "फलफूल र सागपात"],
+              "hi": ["ओमेगा-3 फैटी एसिड", "बी विटामिन", "जटिल कार्बोहाइड्रेट", "प्रोटीन युक्त भोजन", "फल और सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Excessive caffeine", "Alcohol", "Processed foods", "Sugary foods", "Skipping meals"],
+              "ne": ["अधिक कफिन", "रक्सी", "प्रशोधित खाना", "चिनी भएका खाना", "खाना छोड्नु"],
+              "hi": ["अधिक कैफीन", "शराब", "प्रोसेस्ड फूड", "चीनी वाले भोजन", "भोजन छोड़ना"]
+            }
+          }
+        },
+        "anxiety": {
+          "name": {
+            "en": "Anxiety Disorder",
+            "ne": "चिन्ता विकार",
+            "hi": "चिंता विकार"
+          },
+          "symptoms": {
+            "en": ["Excessive worry", "Restlessness", "Difficulty concentrating", "Irritability", "Sleep problems", "Physical symptoms"],
+            "ne": ["अधिक चिन्ता", "बेचैनी", "ध्यान केन्द्रित गर्न गाह्रो", "चिढचिढाउ", "निद्रा समस्या", "शारीरिक लक्षण"],
+            "hi": ["अत्यधिक चिंता", "बेचैनी", "ध्यान केंद्रित करने में कठिनाई", "चिड़चिड़ापन", "नींद की समस्या", "शारीरिक लक्षण"]
+          },
+          "prevention": {
+            "en": ["Stress management", "Regular exercise", "Adequate sleep", "Mindfulness", "Professional help"],
+            "ne": ["तनाव व्यवस्थापन", "नियमित व्यायाम", "पर्याप्त निद्रा", "सचेतनता", "व्यावसायिक सहयोग"],
+            "hi": ["तनाव प्रबंधन", "नियमित व्यायाम", "पर्याप्त नींद", "सचेतनता", "पेशेवर सहायता"]
+          },
+          "treatment": {
+            "en": ["Cognitive behavioral therapy", "Medications", "Relaxation techniques", "Lifestyle changes", "Support groups"],
+            "ne": ["संज्ञानात्मक व्यवहार चिकित्सा", "औषधि", "विश्राम तकनीक", "जीवनशैली परिवर्तन", "सहयोग समूह"],
+            "hi": ["संज्ञानात्मक व्यवहार चिकित्सा", "दवाएं", "आराम तकनीक", "जीवनशैली परिवर्तन", "सहयोग समूह"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Complex carbohydrates", "Magnesium rich foods", "Omega-3 fatty acids", "B vitamins", "Herbal teas"],
+              "ne": ["जटिल कार्बोहाइड्रेट", "म्याग्नेसियम भएका खाना", "ओमेगा-३ फ्याटी एसिड", "बी भिटामिनहरू", "जडिबुटी चिया"],
+              "hi": ["जटिल कार्बोहाइड्रेट", "मैग्नीशियम युक्त भोजन", "ओमेगा-3 फैटी एसिड", "बी विटामिन", "हर्बल चाय"]
+            },
+            "avoid": {
+              "en": ["Caffeine", "Alcohol", "Sugary foods", "Processed foods", "Large meals"],
+              "ne": ["कफिन", "रक्सी", "चिनी भएका खाना", "प्रशोधित खाना", "ठूला खाना"],
+              "hi": ["कैफीन", "शराब", "चीनी वाले भोजन", "प्रोसेस्ड फूड", "बड़े भोजन"]
+            }
+          }
+        }
+      }
+    },
+    "eye_diseases": {
+      "name": {
+        "en": "Eye Diseases",
+        "ne": "आँखा रोगहरू",
+        "hi": "आंख के रोग"
+      },
+      "diseases": {
+        "conjunctivitis": {
+          "name": {
+            "en": "Conjunctivitis (Pink Eye)",
+            "ne": "कन्जक्टिभाइटिस (गुलाबी आँखा)",
+            "hi": "नेत्रश्लेष्मलाशोथ (गुलाबी आंख)"
+          },
+          "symptoms": {
+            "en": ["Red eyes", "Itching", "Discharge", "Tearing", "Burning sensation", "Swollen eyelids"],
+            "ne": ["रातो आँखा", "खजलो", "पानी आउनु", "आँसु आउनु", "जल्ने अनुभव", "सुनिएका पलक"],
+            "hi": ["लाल आंखें", "खुजली", "स्राव", "आंसू आना", "जलन", "सूजी पलकें"]
+          },
+          "prevention": {
+            "en": ["Wash hands frequently", "Don't touch eyes", "Don't share towels", "Replace makeup regularly", "Good hygiene"],
+            "ne": ["बारम्बार हात धुनु", "आँखा नछुनु", "तौलिया साझा नगर्नु", "नियमित मेकअप फेर्नु", "राम्रो स्वच्छता"],
+            "hi": ["बार-बार हाथ धोएं", "आंखों को न छुएं", "तौलिया साझा न करें", "नियमित मेकअप बदलें", "अच्छी स्वच्छता"]
+          },
+          "treatment": {
+            "en": ["Antibiotic eye drops", "Cold compress", "Artificial tears", "Avoid contacts", "Rest"],
+            "ne": ["एन्टिबायोटिक आँखाको थोपा", "चिसो सेक", "कृत्रिम आँसु", "कन्ट्याक्ट बच्नु", "विश्राम"],
+            "hi": ["एंटीबायोटिक आई ड्रॉप्स", "ठंडी सिकाई", "कृत्रिम आंसू", "कॉन्टैक्ट से बचें", "आराम"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Vitamin A rich foods", "Omega-3 fatty acids", "Antioxidants", "Water", "Green leafy vegetables"],
+              "ne": ["भिटामिन ए भएका खाना", "ओमेगा-३ फ्याटी एसिड", "एन्टिअक्सिडेन्ट", "पानी", "हरियो पात भएका सागपात"],
+              "hi": ["विटामिन ए युक्त भोजन", "ओमेगा-3 फैटी एसिड", "एंटीऑक्सिडेंट", "पानी", "हरी पत्तेदार सब्जियां"]
+            },
+            "avoid": {
+              "en": ["Alcohol", "Processed foods", "Sugary foods", "Smoking", "Excessive salt"],
+              "ne": ["रक्सी", "प्रशोधित खाना", "चिनी भएका खाना", "धूम्रपान", "अधिक नुन"],
+              "hi": ["शराब", "प्रोसेस्ड फूड", "चीनी वाले भोजन", "धूम्रपान", "अधिक नमक"]
+            }
+          }
+        }
+      }
+    },
+    "kidney_diseases": {
+      "name": {
+        "en": "Kidney Diseases",
+        "ne": "मिर्गौला रोगहरू",
+        "hi": "गुर्दे के रोग"
+      },
+      "diseases": {
+        "kidney_stones": {
+          "name": {
+            "en": "Kidney Stones",
+            "ne": "मिर्गौला ढुङ्गा",
+            "hi": "गुर्दे की पथरी"
+          },
+          "symptoms": {
+            "en": ["Severe pain", "Blood in urine", "Nausea", "Vomiting", "Frequent urination", "Fever"],
+            "ne": ["गम्भीर दुखाई", "पिसाबमा रगत", "घाउ लाग्नु", "वान्ता", "बारम्बार पिसाब", "ज्वरो"],
+            "hi": ["तीव्र दर्द", "मूत्र में रक्त", "मतली", "उल्टी", "बार-बार पेशाब", "बुखार"]
+          },
+          "prevention": {
+            "en": ["Drink plenty of water", "Limit salt", "Reduce oxalate foods", "Limit animal protein", "Get enough calcium"],
+            "ne": ["धेरै पानी पिउनु", "नुन सीमित गर्नु", "अक्सालेट खाना कम गर्नु", "पशु प्रोटिन सीमित गर्नु", "पर्याप्त क्यालसियम लिनु"],
+            "hi": ["खूब पानी पिएं", "नमक सीमित करें", "ऑक्सालेट भोजन कम करें", "पशु प्रोटीन सीमित करें", "पर्याप्त कैल्शियम लें"]
+          },
+          "treatment": {
+            "en": ["Pain management", "Increased fluid intake", "Medical therapy", "Shock wave therapy", "Surgery if needed"],
+            "ne": ["दुखाई व्यवस्थापन", "तरल पदार्थ बढाउनु", "चिकित्सकीय उपचार", "शक वेव थेरेपी", "आवश्यकतामा शल्यक्रिया"],
+            "hi": ["दर्द प्रबंधन", "तरल पदार्थ बढ़ाना", "चिकित्सा उपचार", "शॉक वेव थेरेपी", "आवश्यकतानुसार सर्जरी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["Water", "Citrus fruits", "Low-oxalate foods", "Whole grains", "Low-sodium foods"],
+              "ne": ["पानी", "सिट्रस फलफूल", "कम अक्सालेट खाना", "साबुत अनाज", "कम नुन भएका खाना"],
+              "hi": ["पानी", "खट्टे फल", "कम ऑक्सालेट भोजन", "साबुत अनाज", "कम नमक वाले भोजन"]
+            },
+            "avoid": {
+              "en": ["High-oxalate foods", "Excessive salt", "Animal protein", "Sugary drinks", "Alcohol"],
+              "ne": ["उच्च अक्सालेट खाना", "अधिक नुन", "पशु प्रोटिन", "चिनी भएका पेय", "रक्सी"],
+              "hi": ["उच्च ऑक्सालेट भोजन", "अधिक नमक", "पशु प्रोटीन", "चीनी वाले पेय", "शराब"]
+            }
+          }
+        }
+      }
+    },
+    "liver_diseases": {
+      "name": {
+        "en": "Liver Diseases",
+        "ne": "कलेजो रोगहरू",
+        "hi": "यकृत रोग"
+      },
+      "diseases": {
+        "hepatitis": {
+          "name": {
+            "en": "Hepatitis",
+            "ne": "हेपाटाइटिस",
+            "hi": "हेपेटाइटिस"
+          },
+          "symptoms": {
+            "en": ["Fatigue", "Jaundice", "Abdominal pain", "Dark urine", "Pale stool", "Loss of appetite"],
+            "ne": ["थकान", "जन्डिस", "पेट दुखाई", "कालो पिसाब", "पहेंलो दिसा", "भोक नलाग्नु"],
+            "hi": ["थकान", "पीलिया", "पेट दर्द", "काला मूत्र", "पीला मल", "भूख न लगना"]
+          },
+          "prevention": {
+            "en": ["Get vaccinated", "Practice safe hygiene", "Avoid sharing needles", "Safe sex practices", "Limit alcohol"],
+            "ne": ["टीका लगाउनु", "सुरक्षित स्वच्छता", "सुई साझा नगर्नु", "सुरक्षित यौन", "रक्सी सीमित गर्नु"],
+            "hi": ["टीकाकरण करें", "सुरक्षित स्वच्छता", "सुई साझा न करें", "सुरक्षित यौन", "शराब सीमित करें"]
+          },
+          "treatment": {
+            "en": ["Antiviral medications", "Rest", "Proper nutrition", "Avoid alcohol", "Regular monitoring"],
+            "ne": ["एन्टिभाइरल औषधि", "विश्राम", "उचित पोषण", "रक्सी बच्नु", "नियमित निगरानी"],
+            "hi": ["एंटीवायरल दवाएं", "आराम", "उचित पोषण", "शराब से बचें", "नियमित निगरानी"]
+          },
+          "food": {
+            "recommended": {
+              "en": ["High-calorie foods", "Protein rich foods", "Fresh fruits", "Vegetables", "Whole grains"],
+              "ne": ["उच्च कैलोरी खाना", "प्रोटिन भएका खाना", "ताजा फलफूल", "सागपात", "साबुत अनाज"],
+              "hi": ["उच्च कैलोरी भोजन", "प्रोटीन युक्त भोजन", "ताजे फल", "सब्जियां", "साबुत अनाज"]
+            },
+            "avoid": {
+              "en": ["Alcohol", "Fatty foods", "Processed foods", "Raw shellfish", "Excessive medications"],
+              "ne": ["रक्सी", "चिल्लो खाना", "प्रशोधित खाना", "काँच्चो सेलफिस", "अधिक औषधि"],
+              "hi": ["शराब", "वसायुक्त भोजन", "प्रोसेस्ड फूड", "कच्चे शेलफिश", "अधिक दवाएं"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

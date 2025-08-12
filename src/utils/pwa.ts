@@ -1,10 +1,10 @@
 import { Workbox } from "workbox-window"
 
-export const registerSW = async () => {
+export const registerSW = async (): Promise<void> => {
   if ("serviceWorker" in navigator) {
     try {
       const wb = new Workbox("/sw.js")
-      
+
       wb.addEventListener("controlling", () => {
         window.location.reload()
       })
@@ -19,23 +19,24 @@ export const registerSW = async () => {
       console.log("Service Worker registered successfully")
     } catch (error) {
       console.error("Service Worker registration failed:", error)
+      throw error
     }
   }
 }
 
-export const checkForUpdates = async () => {
+export const checkForUpdates = async (): Promise<void> => {
   if ("serviceWorker" in navigator) {
     const registration = await navigator.serviceWorker.ready
     registration.update()
   }
 }
 
-export const isInstalled = () => {
+export const isInstalled = (): boolean => {
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches
   const isInWebAppiOS = (window.navigator as any).standalone === true
   return isStandalone || isInWebAppiOS
 }
 
-export const canInstall = () => {
+export const canInstall = (): boolean => {
   return !isInstalled() && "serviceWorker" in navigator
 }

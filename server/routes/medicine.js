@@ -1,10 +1,11 @@
 import express from "express"
 import multer from "multer"
 import { body, validationResult } from "express-validator"
-import { auth } from "../middleware/auth.js"
+import { devAuth } from "../middleware/devAuth.js"
 import { uploadBufferToCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
-import { analyzeImage } from "../services/visionService.js"
-import { analyzeMedicine } from "../services/geminiService.js"
+import { analyzeMedicineImage, analyzeFoodImage } from "../services/ocrService.js"
+import { analyzeMedicineName } from "../services/medicineAnalysisService.js"
+import { getMedicineInfo } from "../services/geminiService.js"
 import MedicineAnalysis from "../models/MedicineAnalysis.js"
 import { logger } from "../utils/logger.js"
 
@@ -29,7 +30,7 @@ const upload = multer({
 // Analyze medicine by image
 router.post(
   "/analyze-image",
-  auth,
+  devAuth,
   upload.single("image"),
   [body("language").optional().isIn(["en", "ne", "hi"]).withMessage("Invalid language")],
   async (req, res) => {
@@ -55,26 +56,39 @@ router.post(
       // Upload image to Cloudinary
       const uploadResult = await uploadBufferToCloudinary(req.file.buffer, "medicine-analysis")
 
-      // Analyze image with Google Vision API
-      const visionResult = await analyzeImage(req.file.buffer)
+      // Analyze image with OCR and drug APIs
+      const ocrResult = await analyzeMedicineImage(req.file.buffer)
 
-      // Get medicine information using Gemini AI
-      const medicineInfo = await analyzeMedicine(visionResult.text, language)
+      if (!ocrResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: ocrResult.message || "Failed to analyze medicine image"
+        })
+      }
+
+      // Use the primary medicine from OCR result
+      const primaryMedicine = ocrResult.data.primaryMedicine
+      if (!primaryMedicine) {
+        return res.status(400).json({
+          success: false,
+          message: "No medicine information found in the image"
+        })
+      }
 
       // Save analysis to database
       const analysis = new MedicineAnalysis({
         userId: req.user.id,
         imageUrl: uploadResult.url,
         imagePublicId: uploadResult.public_id,
-        detectedText: visionResult.text,
-        medicineName: medicineInfo.name,
-        description: medicineInfo.description,
-        usage: medicineInfo.usage,
-        dosage: medicineInfo.dosage,
-        sideEffects: medicineInfo.sideEffects,
-        precautions: medicineInfo.precautions,
+        detectedText: ocrResult.detectedText,
+        medicineName: primaryMedicine.name,
+        description: primaryMedicine.purpose,
+        usage: primaryMedicine.purpose,
+        dosage: primaryMedicine.dosageForm,
+        sideEffects: primaryMedicine.sideEffects,
+        precautions: primaryMedicine.precautions,
         language: language,
-        confidence: visionResult.confidence || 0.8,
+        confidence: ocrResult.data.confidence || 0.8,
       })
 
       await analysis.save()
@@ -86,17 +100,27 @@ router.post(
         message: "Medicine analysis completed successfully",
         data: {
           id: analysis._id,
-          medicineName: medicineInfo.name,
-          description: medicineInfo.description,
-          usage: medicineInfo.usage,
-          dosage: medicineInfo.dosage,
-          sideEffects: medicineInfo.sideEffects,
-          precautions: medicineInfo.precautions,
+          medicineName: primaryMedicine.name,
+          description: primaryMedicine.purpose,
+          usage: primaryMedicine.purpose,
+          dosage: primaryMedicine.dosageForm,
+          sideEffects: primaryMedicine.sideEffects,
+          precautions: primaryMedicine.precautions,
           imageUrl: uploadResult.url,
-          confidence: visionResult.confidence || 0.8,
-          detectedText: visionResult.text,
+          confidence: ocrResult.data.confidence || 0.8,
+          detectedText: ocrResult.data.detectedText,
           language: language,
           createdAt: analysis.createdAt,
+          // Additional detailed information
+          genericName: primaryMedicine.genericName,
+          manufacturer: primaryMedicine.manufacturer,
+          storage: primaryMedicine.storage,
+          whenToTake: primaryMedicine.whenToTake,
+          foodInteractions: primaryMedicine.foodInteractions,
+          alternatives: primaryMedicine.alternatives || [],
+          price: primaryMedicine.price,
+          source: primaryMedicine.source,
+          totalMedicines: ocrResult.data.totalMedicines
         },
       })
     } catch (error) {
@@ -110,10 +134,60 @@ router.post(
   },
 )
 
+// Analyze food image for health insights
+router.post(
+  "/analyze-food",
+  devAuth,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No image file provided",
+        })
+      }
+
+      // Upload image to Cloudinary
+      const uploadResult = await uploadBufferToCloudinary(req.file.buffer, "food-analysis")
+
+      // Analyze food image
+      const foodResult = await analyzeFoodImage(req.file.buffer)
+
+      if (!foodResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: foodResult.message || "Failed to analyze food image"
+        })
+      }
+
+      res.json({
+        success: true,
+        message: "Food analysis completed successfully",
+        data: {
+          imageUrl: uploadResult.url,
+          detectedText: foodResult.data.detectedText,
+          foods: foodResult.data.foods,
+          message: foodResult.message,
+          confidence: foodResult.data.confidence || 0.8,
+          createdAt: new Date()
+        },
+      })
+    } catch (error) {
+      logger.error(`Food image analysis error: ${error.message}`)
+      res.status(500).json({
+        success: false,
+        message: "Failed to analyze food image",
+        error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
+      })
+    }
+  },
+)
+
 // Analyze medicine by name
 router.post(
   "/analyze-name",
-  auth,
+  devAuth,
   [
     body("medicineName").notEmpty().trim().withMessage("Medicine name is required"),
     body("language").optional().isIn(["en", "ne", "hi"]).withMessage("Invalid language"),
@@ -131,18 +205,18 @@ router.post(
 
       const { medicineName, language = "en" } = req.body
 
-      // Get medicine information using Gemini AI
-      const medicineInfo = await analyzeMedicine(medicineName, language)
+      // Use our medicine analysis service
+      const result = await analyzeMedicineName(medicineName, language)
 
       // Save analysis to database
       const analysis = new MedicineAnalysis({
         userId: req.user.id,
-        medicineName: medicineInfo.name,
-        description: medicineInfo.description,
-        usage: medicineInfo.usage,
-        dosage: medicineInfo.dosage,
-        sideEffects: medicineInfo.sideEffects,
-        precautions: medicineInfo.precautions,
+        medicineName: result.data.medicineName,
+        description: result.data.usage,
+        usage: result.data.usage,
+        dosage: result.data.dosage,
+        sideEffects: result.data.sideEffects,
+        precautions: result.data.precautions,
         language: language,
         confidence: 0.9, // Higher confidence for text-based analysis
       })
@@ -154,18 +228,7 @@ router.post(
       res.json({
         success: true,
         message: "Medicine analysis completed successfully",
-        data: {
-          id: analysis._id,
-          medicineName: medicineInfo.name,
-          description: medicineInfo.description,
-          usage: medicineInfo.usage,
-          dosage: medicineInfo.dosage,
-          sideEffects: medicineInfo.sideEffects,
-          precautions: medicineInfo.precautions,
-          confidence: 0.9,
-          language: language,
-          createdAt: analysis.createdAt,
-        },
+        data: result.data,
       })
     } catch (error) {
       logger.error(`Medicine name analysis error: ${error.message}`)
@@ -179,7 +242,7 @@ router.post(
 )
 
 // Get user's medicine analysis history
-router.get("/history", auth, async (req, res) => {
+router.get("/history", devAuth, async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query
 
@@ -213,7 +276,7 @@ router.get("/history", auth, async (req, res) => {
 })
 
 // Get specific medicine analysis
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", devAuth, async (req, res) => {
   try {
     const analysis = await MedicineAnalysis.findOne({
       _id: req.params.id,
@@ -242,7 +305,7 @@ router.get("/:id", auth, async (req, res) => {
 })
 
 // Delete medicine analysis
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", devAuth, async (req, res) => {
   try {
     const analysis = await MedicineAnalysis.findOne({
       _id: req.params.id,
